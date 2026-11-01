@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3d0a0e">
+<title>Mitz &amp; Simz Tarokk</title>
+<style>
+:root{
+  --felt1:#6b1219; --felt2:#3d0a0e; --gold:#d9ad45; --gold2:#f3d27a; --gold-dim:#a07c2c;
+  --ink:#2a1a12; --cream:#fbf4e2; --cream2:#f1e3bd; --red:#b3161f; --black:#1d1d22;
+  --text:#f7ead0; --muted:#cdb68c; --good:#7fd38a; --bad:#ff8a80;
+  --cw:66px; --ch:102px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--felt2);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{overflow:hidden}
+button{font:inherit;color:inherit}
+#app{position:relative;display:flex;flex-direction:column;height:100dvh;max-width:1100px;margin:0 auto;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:linear-gradient(#2a0609,#1c0406);border-bottom:1px solid var(--gold-dim)}
+.logo{font-family:Georgia,"Times New Roman",serif;font-size:20px;color:var(--gold2);letter-spacing:.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo small{display:block;font-family:system-ui,sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.hbtn{background:transparent;border:1px solid var(--gold-dim);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--gold2);cursor:pointer;min-height:34px}
+.hbtn:focus-visible,.btn:focus-visible,.card:focus-visible,.chip:focus-visible,.pile:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+#table{position:relative;flex:1 1 auto;min-height:150px;background:radial-gradient(ellipse at 50% 45%,var(--felt1) 0%,#521016 45%,var(--felt2) 100%);overflow:hidden}
+#table::before{content:"";position:absolute;inset:10px;border:1px solid rgba(217,173,69,.25);border-radius:22px;pointer-events:none}
+.seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;width:108px;text-align:center;z-index:3}
+.seat.s2{top:10px;left:50%;transform:translateX(-50%)}
+.seat.s1{right:2px;top:23%}
+.seat.s3{left:2px;top:23%}
+.seat.s0{left:12px;bottom:8px;flex-direction:row;width:auto;gap:8px;text-align:left;align-items:center}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:Georgia,serif;font-size:19px;font-weight:bold;color:#2a0609;background:radial-gradient(circle at 35% 30%,var(--gold2),var(--gold) 60%,var(--gold-dim));border:2px solid #fff3;box-shadow:0 2px 6px #0007;position:relative;flex:none}
+.seat.turn .av{box-shadow:0 0 0 3px var(--gold2),0 0 16px var(--gold2)}
+.nm{font-size:13px;font-weight:600;line-height:1.1}
+.lvl{font-size:10px;color:var(--muted);font-weight:400}
+.tags{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+.seat.s0 .tags{justify-content:flex-start}
+.tag{font-size:10px;padding:1px 6px;border-radius:9px;background:#0006;border:1px solid var(--gold-dim);color:var(--gold2);white-space:nowrap}
+.tag.decl{background:var(--gold);color:#2a0609;border-color:var(--gold2);font-weight:700}
+.tag.part{background:#7a1d24;border-color:var(--gold)}
+.tag.opp{background:#1a1a2a;border-color:#6f6f99;color:#c9c9f0}
+.cnt{font-size:11px;color:var(--muted)}
+.coins{font-size:12px;font-weight:700;color:var(--gold2);display:inline-flex;align-items:center;gap:4px}
+.coins.low{color:var(--bad)}
+.coin{display:inline-block;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8,var(--gold) 55%,#8a6420);box-shadow:0 0 0 1px #6b4d17}
+.card.img .ix{background:#fbf4e2ee;border:1px solid #c9a24a;border-radius:4px;padding:2px 3px 2px;left:2px;top:2px;color:#7a1018;box-shadow:0 1px 2px #0004}
+.card.img .ix.red{color:var(--red)} .card.img .ix.blk{color:var(--black)}
+.hat{position:absolute;top:-14px;right:-8px;font-size:20px;filter:drop-shadow(0 1px 1px #000)}
+.pile{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);background:none;border:0;padding:2px;min-height:24px}
+.pile .stk{position:relative;width:18px;height:24px}
+.pile .stk i{position:absolute;inset:0;border-radius:3px;background:repeating-linear-gradient(45deg,#8e141c 0 3px,#a31a22 3px 6px);border:1px solid var(--gold)}
+.pile .stk i:nth-child(2){transform:translate(2px,-2px) rotate(6deg)}
+.pile .stk i:nth-child(3){transform:translate(4px,-3px) rotate(-5deg)}
+button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
+.bubble{position:absolute;z-index:6;background:var(--cream);color:var(--ink);font-size:12px;font-weight:600;padding:5px 9px;border-radius:12px;box-shadow:0 3px 10px #0008;line-height:1.25;pointer-events:none;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.bubble.b2{top:16px;left:calc(50% + 64px);max-width:calc(50% - 76px)}
+.bubble.b1{right:114px;top:23%;max-width:150px}
+.bubble.b3{left:114px;top:23%;max-width:150px}
+.bubble.b0{left:12px;bottom:66px;max-width:220px}
+#trick{position:absolute;left:50%;top:55%;width:0;height:0;z-index:4}
+#trick .card{position:absolute;left:0;top:0}
+#trick .tc0{translate:-50% 2%}
+#trick .tc1{translate:36% -56%}
+#trick .tc2{translate:-50% -114%}
+#trick .tc3{translate:-136% -56%}
+#trick .card.enter{animation:enter .34s cubic-bezier(.2,.7,.3,1)}
+@keyframes enter{from{transform:translate(var(--fx),var(--fy)) scale(.85) rotate(-8deg)}to{transform:none}}
+#trick.collect .card{transform:translate(var(--tx),var(--ty)) scale(.25);opacity:0;transition:transform .42s ease-in,opacity .3s ease-in .12s}
+.talon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;font-size:11px;color:var(--muted)}
+.talon .fan{position:relative;width:calc(var(--cw) * .7 + 25px);height:calc(var(--ch) * .7);margin:0 auto 3px}
+.talon .card{position:absolute;top:0;--cw:43px;--ch:67px}
+#info{position:absolute;left:14px;top:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:calc(50% - 76px);pointer-events:none}
+.contract{font-size:11.5px;background:#0007;border:1px solid var(--gold-dim);padding:3px 10px;border-radius:12px;color:var(--gold2);text-align:center}
+.items{display:flex;flex-wrap:wrap;gap:3px}
+.it{font-size:10.5px;padding:1px 7px;border-radius:9px;background:#0008;border:1px solid #fff2}
+.it.D{border-color:var(--gold)} .it.O{border-color:#8f8fd0}
+.it b{color:var(--gold2)}
+.skart{position:absolute;z-index:5;display:flex;gap:3px;align-items:center;font-size:11px;color:var(--muted)}
+.skart .card{--cw:30px;--ch:46px}
+.skart .card .band,.skart .card .bg b{display:none}
+/* panel */
+#panel{flex:none;background:linear-gradient(#2b080c,#1d0507);border-top:1px solid var(--gold-dim);padding:8px 10px;min-height:60px}
+.ptitle{font-size:14px;font-weight:700;color:var(--gold2);margin-bottom:6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ptitle span{font-weight:400;font-size:12px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{border:1px solid var(--gold);background:linear-gradient(#5d1218,#3d0a0e);color:var(--cream);border-radius:10px;padding:8px 13px;font-size:14px;cursor:pointer;min-height:42px;line-height:1.1;text-align:center}
+.btn small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.btn.primary{background:linear-gradient(var(--gold2),var(--gold));color:#2a0609;font-weight:700;border-color:var(--gold2)}
+.btn.primary small{color:#5a3a10}
+.btn:disabled{opacity:.4;cursor:default}
+.err{color:var(--bad);font-size:12px;margin-top:6px}
+.hint{color:var(--muted);font-size:12px}
+.grp{margin-bottom:6px}
+.grp h4{margin:0 0 4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.chip{border:1px solid var(--gold-dim);background:#0005;color:var(--text);border-radius:16px;padding:6px 11px;font-size:13px;cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--gold);color:#2a0609;border-color:var(--gold2);font-weight:700}
+.chip small{opacity:.75;font-size:11px}
+.annscroll{max-height:32vh;overflow:auto}
+#coach.on ~ #panel .annscroll{max-height:17vh}
+/* short table (coach + big panel on a phone): pull the seats up and tuck the contract bottom-right */
+#table.short .lvl{display:none}
+#table.short .seat.s1,#table.short .seat.s3{top:6px}
+#table.short .seat.s2{top:4px}
+#table.short #info{top:auto;left:auto;bottom:6px;right:10px;align-items:flex-end}
+#table.short .bubble.b1,#table.short .bubble.b3{top:70px}
+@media (max-width:520px){.chip{padding:5px 9px;font-size:12.5px;min-height:32px}.grp{margin-bottom:4px}}
+/* hand */
+#hand{position:relative;height:calc(var(--ch) + 26px);padding:14px 8px 8px;background:#1a0406;flex:none}
+#hand.two{height:calc(var(--ch) * 1.62 + 22px)}
+#hand .card{position:absolute;transition:transform .15s ease,left .2s ease,top .2s ease}
+#hand .card.legal{cursor:pointer}
+#hand .card.legal:hover{transform:translateY(-8px)}
+#hand .card.dim{filter:brightness(.55) saturate(.6)}
+#hand .card.sel{transform:translateY(-14px);box-shadow:0 0 0 3px var(--gold2),0 6px 14px #000a}
+#hand .card.new::after{content:"";position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%;background:var(--gold2);box-shadow:0 0 6px var(--gold2)}
+#hand .card.intro{animation:intro .42s cubic-bezier(.2,.7,.3,1) both}
+@keyframes intro{from{transform:translateY(40px) rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
+/* cards */
+.card{position:relative;width:var(--cw);height:var(--ch);border-radius:7px;background:var(--cream);color:var(--ink);box-shadow:0 2px 6px #0009;border:1px solid #c9b68a;overflow:hidden;user-select:none;-webkit-user-select:none}
+.card .in{position:absolute;inset:3px;border-radius:5px;border:1px solid #d6c08a}
+.card .ix{position:absolute;left:4px;top:3px;font-family:Georgia,serif;font-weight:700;font-size:12px;line-height:1;letter-spacing:-.3px}
+.card .ix i{display:block;font-style:normal;font-size:13px;margin-top:1px}
+.card .bg{position:absolute;inset:0;display:grid;place-items:center;font-family:Georgia,serif}
+.card.t{background:linear-gradient(160deg,#fffaf0,var(--cream) 50%,var(--cream2))}
+.card.t .in{border:2px solid var(--gold);box-shadow:inset 0 0 0 2px #fff8,inset 0 0 0 3px #e6c97a}
+.card.t .ix{color:#7a1018}
+.card.t .bg b{font-size:calc(var(--cw) * .34);color:#8e141c;letter-spacing:-1px;margin-top:6px}
+.card.t .bg::before{content:"";position:absolute;width:52%;height:22%;top:17%;border-radius:50%;background:radial-gradient(ellipse,#e5c56f 0,#e5c56f00 70%)}
+.card.t .band{position:absolute;left:0;right:0;bottom:12%;text-align:center;font-size:calc(var(--cw) * .13);font-weight:800;letter-spacing:1px;color:#fff;background:#8e141c;padding:1px 0}
+.card.hon{background:linear-gradient(160deg,#fff6d6,#f6e2a2 60%,#e9cd7a)}
+.card.hon .bg b{color:#5c0b10}
+.card.skiz .bg b{font-size:calc(var(--cw) * .5);color:#b3161f;margin-top:0}
+.card.red{color:var(--red)} .card.blk{color:var(--black)}
+.card.s .bg span{font-size:calc(var(--cw) * .55);line-height:1}
+.card.s .bg em{position:absolute;bottom:9%;font-style:normal;font-size:calc(var(--cw) * .13);font-weight:700;letter-spacing:.5px}
+.card.court .bg span{font-size:calc(var(--cw) * .42)}
+.card.court .bg strong{position:absolute;top:19%;font-size:calc(var(--cw) * .27);font-weight:700;font-family:Georgia,serif}
+.card.court .bg span{margin-top:14%}
+.card.back{background:repeating-linear-gradient(45deg,#8e141c 0 6px,#a31a22 6px 12px);border:2px solid var(--gold)}
+.card.back .in{border-color:var(--gold2);background:radial-gradient(circle,#d9ad4566 0,transparent 60%)}
+.card.back .in::after{content:"M&S";position:absolute;inset:0;display:grid;place-items:center;font-family:Georgia,serif;font-size:calc(var(--cw) * .2);color:var(--gold2);opacity:.85;letter-spacing:1px}
+.card.img{padding:0;border:0;background:#fff}
+.card.img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+/* tutorial coach */
+#coach{flex:none;display:none;background:linear-gradient(#f8eccb,#efdcae);color:var(--ink);border-top:2px solid var(--gold);padding:8px 10px;font-size:13.5px;line-height:1.4;max-height:25vh;overflow:auto}
+#coach.on{display:block}
+#coach .who{display:flex;gap:8px;align-items:flex-start}
+#coach .cat{flex:none;width:34px;height:34px;border-radius:50%;background:#1d1a1f;display:grid;place-items:center;box-shadow:0 0 0 2px var(--gold)}
+#coach .cat svg{width:26px;height:26px}
+#coach b{color:#7a1018}
+#coach .note{background:#fff7;border-radius:8px;padding:4px 8px;margin-bottom:5px}
+#coach .intro{margin-bottom:5px}
+#coach .crow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+#coach .cbtn{border:1px solid #8e141c;background:#fff8;color:#5c0b10;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;min-height:34px;font-weight:600}
+#coach .cbtn.pri{background:#8e141c;color:#fff}
+.btn.hint,.chip.hint{box-shadow:0 0 0 3px #7fe08a,0 0 14px #7fe08a}
+#hand .card.hintc{box-shadow:0 0 0 3px #7fe08a,0 0 14px #7fe08a;transform:translateY(-10px)}
+.lesson{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #fff1}
+.lesson b{color:var(--gold2)} .lesson .hint{display:block}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.cardrow{display:flex;gap:4px;flex-wrap:wrap;align-items:flex-end;margin:6px 0}
+.cardrow .card{--cw:44px;--ch:68px}
+.cardrow .card .band{display:none}
+.rp .cardrow .card{--cw:34px;--ch:53px}
+.rp .cardrow .card .ix{font-size:10px;padding:1px 2px}
+.rp .cardrow{gap:0;flex-wrap:nowrap}
+.rp .cardrow .card + .card{margin-left:-5px}
+.rp .trk .no{width:54px}
+.cardrow .card.hintc{box-shadow:0 0 0 3px #7fe08a,0 0 10px #7fe08a}
+/* effects layer */
+#fx{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+#fx .card{position:absolute;left:0;top:0}
+.skipnote{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-size:11px;color:var(--muted);z-index:41}
+/* modals */
+.modal{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:50;padding:12px}
+.sheet{background:linear-gradient(#2e090d,#1d0507);border:1px solid var(--gold);border-radius:14px;max-width:560px;width:100%;max-height:88dvh;overflow:auto;padding:14px 16px;box-shadow:0 10px 40px #000}
+.sheet h2{margin:0 0 8px;font-family:Georgia,serif;color:var(--gold2);font-size:20px}
+.sheet h3{color:var(--gold2);font-size:15px;margin:14px 0 4px}
+.sheet p,.sheet li{font-size:14px;line-height:1.45;color:var(--text)}
+.sheet ul{padding-left:18px;margin:4px 0}
+.sheet table{border-collapse:collapse;width:100%;font-size:13px}
+.sheet td,.sheet th{padding:4px 6px;border-bottom:1px solid #fff1;text-align:right;vertical-align:top}
+.sheet .lines td:first-child{font-size:13px}
+.sheet td:first-child,.sheet th:first-child{text-align:left}
+.sheet th{color:var(--muted);font-weight:600}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.close{float:right}
+.big{font-size:22px;font-family:Georgia,serif;color:var(--gold2);margin:4px 0}
+.logl{font-size:13px;padding:3px 0;border-bottom:1px solid #fff1}
+.logl.big{font-size:13px;font-family:inherit;color:var(--gold2);margin:0}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #fff1;font-size:14px;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted)}
+.trk{display:flex;gap:4px;align-items:flex-end;padding:6px 0;border-bottom:1px solid #fff1}
+.trk .card{--cw:44px;--ch:68px}
+.trk .who{font-size:10px;color:var(--muted);text-align:center;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trk .no{width:64px;flex:none;font-size:12px;color:var(--muted)}
+.trk .w .card{box-shadow:0 0 0 2px var(--gold2)}
+@media (min-width:700px){
+  :root{--cw:78px;--ch:120px}
+  .seat{width:150px}
+  .seat.s1{right:20px} .seat.s3{left:20px}
+  .bubble.b1{right:176px} .bubble.b3{left:176px}
+  #trick .tc1{translate:55% -56%} #trick .tc3{translate:-155% -56%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">Tarokk<small>Mitz &amp; Simz</small></div>
+    <button class="hbtn" data-act="scores">Scores</button>
+    <button class="hbtn" data-act="log">Log</button>
+    <button class="hbtn" data-act="learn">Learn</button>
+    <button class="hbtn" data-act="settings" aria-label="Settings">⚙</button>
+  </header>
+  <div id="table" data-act="skip"></div>
+  <div id="coach" aria-live="polite"></div>
+  <div id="panel" aria-live="polite"></div>
+  <div id="hand"></div>
+  <div id="fx"></div>
+</div>
+<div id="modal"></div>
+<script>
+/* Card art hook: supply image URLs (or data: URIs) to replace the drawn faces.
+   Keys: 'back', 'T1'..'T21', 'T22' (skíz), and suit cards like 'HK','HQ','HC','HJ','HX' (X = ace/ten).
+   Any card without an image falls back to the drawn design. */
+window.TAROKK_ART = window.TAROKK_ART || {};
+</script>
+<script>/*ENGINE*/</script>
+<script>/*AI*/</script>
+<script>/*ART*/</script>
+<script>
+'use strict';
+const E = window.TarokkEngine, AI = window.TarokkAI, ART = window.TAROKK_ART;
+const KEY = 'msTarokk.v1';
+const SPEEDS = { relaxed: 1.5, normal: 1, fast: 0.45 };
+const LEVEL_NAMES = { novice: 'Novice', intermediate: 'Intermediate', seasoned: 'Seasoned', pro: 'Pro' };
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let M = null, V = null;
+const ui = {
+  sel: [], err: '', annSel: { declare: 0, bonuses: [], kontras: [] },
+  showTrick: null, collecting: false, timer: null, modal: null,
+  bubbles: {}, logSeen: 0, anim: null, intro: false, dealtHand: 0, fx: null, tut: null, mainM: null, learned: {}, coach: { curKey: null, cur: null }, hintKey: null, hideKey: null,
+  prefs: { speed: 'normal', illustrated: false, review: true, xxiDouble: true, coins: 100, art: 'ms', helper: 'ask', sound: true, levels: [null, 'intermediate', 'intermediate', 'intermediate'] },
+};
+
+// ---------- persistence ----------
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ m: ui.tut ? ui.mainM : M, prefs: ui.prefs, learned: ui.learned })); } catch (e) {} }
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.prefs) ui.prefs = Object.assign(ui.prefs, s.prefs);
+    if (s && s.learned) ui.learned = s.learned;
+    if (s && s.m && s.m.v === 2 && s.m.hand && s.m.levels) return s.m;
+  } catch (e) {}
+  return null;
+}
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const N = p => M.names[p];
+const delay = ms => ms * (SPEEDS[ui.prefs.speed] || 1);
+const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+const MS_ART = window.MS_ART || {};
+// user-supplied TAROKK_ART wins; otherwise the Mitz & Simz drawings when that style is chosen
+const artFor = c => ART[c] || (ui.prefs.art === 'ms' ? MS_ART[c] : null);
+function cardHTML(c, cls, extra) {
+  cls = cls || ''; extra = extra || '';
+  if (!c) {
+    if (artFor('back')) return `<div class="card img ${cls}" ${extra}><img src="${esc(artFor('back'))}" alt=""></div>`;
+    if (ART.back) return `<div class="card img ${cls}" ${extra}><img src="${esc(ART.back)}" alt=""></div>`;
+    return `<div class="card back ${cls}" ${extra}><div class="in"></div></div>`;
+  }
+  if (artFor(c)) {
+    let ix;
+    if (E.isT(c)) ix = `<div class="ix">${c === 'T22' ? '★' : E.roman(E.tv(c))}</div>`;
+    else {
+      const red = c[0] === 'H' || c[0] === 'D';
+      ix = `<div class="ix ${red ? 'red' : 'blk'}">${c[1] === 'X' ? (red ? 'A' : '10') : c[1]}<i>${{ H: '♥', D: '♦', C: '♣', S: '♠' }[c[0]]}</i></div>`;
+    }
+    return `<div class="card img ${cls}" data-c="${c}" ${extra} aria-label="${esc(E.cardName(c))}"><img src="${esc(artFor(c))}" alt="">${ix}</div>`;
+  }
+  if (E.isT(c)) {
+    const n = E.tv(c);
+    if (n === 22) return `<div class="card t hon skiz ${cls}" data-c="${c}" ${extra} aria-label="Skíz"><div class="in"></div><div class="ix">★</div><div class="bg"><b>★</b></div><div class="band">SKÍZ</div></div>`;
+    const r = E.roman(n);
+    const hon = n === 1 || n === 21;
+    return `<div class="card t ${hon ? 'hon' : ''} ${cls}" data-c="${c}" ${extra} aria-label="Tarokk ${r}"><div class="in"></div><div class="ix">${r}</div><div class="bg"><b>${r}</b></div>${n === 1 ? '<div class="band">PAGÁT</div>' : ''}</div>`;
+  }
+  const sym = { H: '♥', D: '♦', C: '♣', S: '♠' }[c[0]];
+  const red = c[0] === 'H' || c[0] === 'D';
+  const r = c[1] === 'X' ? (red ? 'A' : '10') : c[1];
+  const word = { K: 'KING', Q: 'QUEEN', C: 'CAVALIER', J: 'JACK', X: red ? 'ACE' : 'TEN' }[c[1]];
+  const court = 'KQCJ'.includes(c[1]);
+  return `<div class="card s ${red ? 'red' : 'blk'} ${court ? 'court' : ''} ${cls}" data-c="${c}" data-r="${r}" ${extra} aria-label="${E.cardName(c)}"><div class="in"></div><div class="ix">${r}<i>${sym}</i></div><div class="bg">${court ? '<strong>' + r + '</strong>' : ''}<span>${sym}</span><em>${word}</em></div></div>`;
+}
+function tricksWon(h, p) {
+  if (!h.play) return [];
+  return h.play.tricks.filter(t => t.winner === p && !(ui.showTrick && ui.showTrick.no === t.no));
+}
+function seatTags(h, p) {
+  const t = [];
+  if (p === h.dealer) t.push('<span class="tag">Dealer</span>');
+  if (h.declarer === p) t.push(`<span class="tag decl">Declarer · ${E.BID_NAMES[h.level]}</span>`);
+  if (h.side && p !== h.declarer) {
+    const s = h.side[p];
+    if (p === 0) t.push(s === 'D' ? '<span class="tag part">Partner (secret)</span>' : '<span class="tag opp">Opponent</span>');
+    else if (s === 'D') t.push('<span class="tag part">Partner</span>');
+    else if (s === 'O') t.push('<span class="tag opp">Opponent</span>');
+  }
+  if (h.ann && h.ann.declared[p]) t.push(`<span class="tag">${h.ann.declared[p]} tarokks</span>`);
+  return t.join('');
+}
+function pileHTML(h, p) {
+  const n = tricksWon(h, p).length;
+  if (!n) return '';
+  const stack = `<span class="stk">${'<i></i>'.repeat(Math.min(3, n))}</span>`;
+  const lab = `${n} trick${n > 1 ? 's' : ''}`;
+  if (p === 0) return `<button class="pile" data-pile="0" data-act="mytricks" aria-label="Your ${lab}">${stack}${lab}</button>`;
+  return `<span class="pile" data-pile="${p}">${stack}${lab}</span>`;
+}
+
+// ---------- rendering ----------
+function render() {
+  V = E.viewFor(M, 0);
+  const h = V.hand;
+  const pd = E.pending(M);
+  const dealing = !!ui.fx;
+  let html = '';
+  for (let p = 0; p < 4; p++) {
+    const turn = pd.player === p && !ui.showTrick && !dealing ? 'turn' : '';
+    const n = dealing ? 0 : h.hands[p].length;
+    const lvl = p ? `<div class="lvl">${LEVEL_NAMES[M.levels[p]] || ''}${n ? ` · ${n} cards` : ''}</div>` : '';
+    html += `<div class="seat s${p} ${turn}" data-seat="${p}"><div class="av">${esc(N(p)[0])}${h.hat === p ? '<span class="hat" title="Mayor’s hat">🎩</span>' : ''}</div>` +
+      `<div><div class="nm">${esc(N(p))} <span class="coins${M.scores[p] <= 20 ? ' low' : ''}" title="Gold coins"><i class="coin"></i>${M.scores[p]}</span></div>${lvl}<div class="tags">${seatTags(h, p)}</div>${pileHTML(h, p)}</div></div>`;
+  }
+  if (!dealing) for (const [p, txt] of Object.entries(ui.bubbles)) if (txt) html += `<div class="bubble b${p}">${esc(txt)}</div>`;
+  if (h.phase === 'bidding' && !dealing) {
+    html += `<div class="talon" id="talon"><div class="fan">${h.talon.map((c, i) => cardHTML(null, '', `style="left:${i * 5}px"`)).join('')}</div>Talon</div>`;
+  }
+  const tr = ui.showTrick ? ui.showTrick.cards : (h.play ? h.play.trick : []);
+  html += `<div id="trick" class="${ui.collecting ? 'collect' : ''}">${tr.map(x => cardHTML(x.c, 'tc' + x.p, ui.anim && ui.anim.card === x.c ? 'data-enter="1"' : '')).join('')}</div>`;
+  if (h.shownSkart && h.shownSkart.length && h.declarer >= 0) {
+    const pos = { 0: 'left:12px;bottom:64px', 1: 'right:10px;top:calc(23% + 118px)', 2: 'top:104px;left:calc(50% - 60px)', 3: 'left:10px;top:calc(23% + 118px)' }[h.declarer];
+    html += `<div class="skart" style="${pos}">Discarded ${h.shownSkart.map(c => cardHTML(c)).join('')}</div>`;
+  }
+  html += `<div id="info">${infoHTML(h)}</div>`;
+  if (dealing) html += `<div class="skipnote">Tap to skip</div>`;
+  $('#table').innerHTML = html;
+  const tb = $('#table');
+  updateCoach(pd);
+  renderPanel(pd, h);
+  renderHand(pd, h);
+  renderCoach(pd);
+  tb.classList.toggle('short', tb.clientHeight < 330);
+  postRender();
+  if (ui.modal !== ui.modalShown) renderModal();
+}
+function postRender() {
+  // card flying into the trick
+  const el = document.querySelector('#trick [data-enter]');
+  if (el && ui.anim && !reduceMotion) {
+    const r = el.getBoundingClientRect(), c = center(r);
+    let src = ui.anim.from;
+    if (!src) { const av = document.querySelector(`.seat.s${ui.anim.p} .av`); if (av) src = center(av.getBoundingClientRect()); }
+    if (src) {
+      el.style.setProperty('--fx', (src.x - c.x) + 'px');
+      el.style.setProperty('--fy', (src.y - c.y) + 'px');
+      el.classList.add('enter');
+    }
+  }
+  ui.anim = null;
+  // trick collection target
+  if (ui.showTrick) {
+    const t = document.getElementById('trick');
+    const tgt = document.querySelector(`.seat.s${ui.showTrick.winner} .av`);
+    if (t && tgt) {
+      const tr = t.getBoundingClientRect(), g = center(tgt.getBoundingClientRect());
+      t.style.setProperty('--tx', (g.x - tr.left - 30) + 'px');
+      t.style.setProperty('--ty', (g.y - tr.top - 40) + 'px');
+    }
+  }
+  ui.intro = false;
+}
+function infoHTML(h) {
+  let s = '';
+  if (h.declarer >= 0 && h.level) {
+    let c = `${esc(N(h.declarer))} · ${E.BID_NAMES[h.level]} (${h.level})`;
+    if (h.called) c += ` · called ${E.roman(E.tv(h.called))}`;
+    if (h.mult > 1) c += ` · stakes ×${h.mult}`;
+    s += `<div class="contract">${c}</div>`;
+  } else if (h.mult > 1) s += `<div class="contract">Stakes ×${h.mult}</div>`;
+  if (h.items) {
+    const its = Object.values(h.items).filter(it => it.type !== 'game' || it.kontra);
+    if (its.length) s += '<div class="items">' + its.map(it =>
+      `<span class="it ${it.team}">${it.team === 'D' ? 'Decl' : 'Opp'}: ${esc(E.itemLabel(it))}${it.kontra ? ' <b>' + E.KONTRA_NAMES[it.kontra] + '</b>' : ''}</span>`).join('') + '</div>';
+  }
+  return s;
+}
+function renderPanel(pd, h) {
+  const el = $('#panel');
+  const human = pd.player === 0 && !ui.showTrick && !ui.fx;
+  if (ui.fx) { el.innerHTML = `<div class="status">${esc(N(h.dealer))} is ${ui.fx === 'deal' ? 'shuffling and dealing' : 'handing out the talon'}…</div>`; return; }
+  if (pd.type === 'over' && !ui.tut) {
+    el.innerHTML = `<div class="row"><button class="btn primary" data-act="showover">Final standings</button><button class="btn" data-act="newmatch">New game</button></div>`;
+    return;
+  }
+  if (pd.type === 'end') {
+    el.innerHTML = ui.tut ? `<div class="row"><button class="btn primary" data-act="showresult">See result</button><button class="btn" data-act="exittut">Finish tutorial</button></div>`
+      : `<div class="row"><button class="btn primary" data-act="showresult">See result</button><button class="btn" data-act="next">Next hand</button></div>`;
+    return;
+  }
+  if (!human) {
+    let st;
+    if (ui.showTrick) st = `${esc(N(ui.showTrick.winner))} takes the trick.`;
+    else if (pd.type === 'discard') st = `${esc(N(pd.player))} is discarding…`;
+    else if (pd.type === 'call') st = `${esc(N(pd.player))} is calling a partner…`;
+    else st = `${esc(N(pd.player))} is thinking…`;
+    el.innerHTML = `<div class="status">${st}</div>`;
+    return;
+  }
+  let html = '';
+  switch (pd.type) {
+    case 'bid': {
+      const noHon = !h.hands[0].some(E.isHonour);
+      html += `<div class="ptitle">Your bid <span>${noHon ? 'You hold no honour (Skíz, XXI or Pagát).' : (h.bid.high ? 'Current bid: ' + E.BID_NAMES[h.bid.high] + ' by ' + esc(N(h.bid.highBidder)) : 'No bids yet.')}</span></div><div class="row">`;
+      pd.options.forEach((o, i) => {
+        let lab, sub;
+        if (o.type === 'pass') { lab = 'Pass'; sub = o.yielded ? 'Yield: promises XX + high honour' : 'Passz'; }
+        else if (o.type === 'hold') { lab = 'Hold ' + E.BID_NAMES[o.level]; sub = 'Tartom'; }
+        else { lab = E.BID_NAMES[o.level]; sub = E.BID_HU[o.level] + (o.cue ? ' · shows ' + E.roman(E.tv(o.cue)) : '') + (o.proba ? ' · no honour!' : ''); }
+        const hi = HR() && HR().type === o.type && (o.type === 'pass' || HR().level === o.level) ? 'hint' : '';
+        html += `<button class="btn ${o.type === 'pass' ? '' : 'primary'} ${hi}" data-act="bid" data-i="${i}">${lab}<small>${sub}</small></button>`;
+      });
+      html += '</div>';
+      break;
+    }
+    case 'discard': {
+      const n = pd.count;
+      html += `<div class="ptitle">Discard ${n} card${n > 1 ? 's' : ''} <span>Kings, honours and the XX can’t be discarded. ${h.declarer === 0 ? 'Your discards count for your side.' : 'Your discards count for the opponents.'}</span></div>` +
+        `<div class="row"><button class="btn primary" data-act="discard" ${ui.sel.length === n ? '' : 'disabled'}>Discard ${ui.sel.length}/${n}</button><span class="hint">Cards from the talon have a gold dot.</span></div>`;
+      break;
+    }
+    case 'annul':
+      html += `<div class="ptitle">Annul the hand? <span>Your holding allows you to throw the hand in (the next four deals are then at double stakes).</span></div>` +
+        `<div class="row"><button class="btn ${HR() && HR().yes ? 'hint' : ''}" data-act="annul" data-y="1">Annul</button><button class="btn primary ${HR() && !HR().yes ? 'hint' : ''}" data-act="annul" data-y="0">Play on</button></div>`;
+      break;
+    case 'call': {
+      html += `<div class="ptitle">Call your partner <span>Whoever holds the called tarokk is your secret partner.</span></div><div class="row">`;
+      pd.options.forEach(o => {
+        const sub = o.forced ? 'Required (' + o.forced + ')' : o.self ? 'You hold it: play alone' : o.any ? 'Allowed: a tarokk was discarded' : o.card === 'T20' ? 'The usual call' : 'Highest you lack';
+        html += `<button class="btn ${o.self ? '' : 'primary'} ${HR() && HR().card === o.card ? 'hint' : ''}" data-act="call" data-c="${o.card}">${E.roman(E.tv(o.card))}<small>${sub}</small></button>`;
+      });
+      html += '</div>';
+      break;
+    }
+    case 'announce': html += announcePanel(pd, h); break;
+    case 'play': {
+      const lead = !h.play.trick.length;
+      const obs = E.obligations(M.hand, 0);
+      html += `<div class="ptitle">${lead ? 'Your lead' : 'Your turn'} <span>Trick ${h.play.trickNo} of 9${obs.length ? ' · keep ' + obs.map(o => E.shortName(o.card) + ' for trick ' + o.trick).join(', ') : ''}</span></div>` +
+        `<div class="row"><span class="hint">Tap a bright card to play it.</span>${h.play.tricks.length ? '<button class="btn" data-act="lasttrick">Last trick</button>' : ''}</div>`;
+      break;
+    }
+  }
+  if (!ui.tut && ui.prefs.helper === 'ask' && ui.hintKey !== ui.coach.curKey && ['bid', 'discard', 'annul', 'call', 'announce', 'play'].includes(pd.type))
+    html += `<div class="row" style="margin-top:6px"><button class="chip" data-act="hint">💡 Hint from ${coachName()}</button></div>`;
+  if (ui.err) html += `<div class="err">${esc(ui.err)}</div>`;
+  el.innerHTML = html;
+}
+const BONUS_WHAT = { trull: 'win all 3 honours', kings4: 'win all 4 kings', ultimo: 'last trick with the I', xxi: 'Skíz catches the XXI',
+  double: '71+ points', volat: 'all 9 tricks', centrum: 'first 5 tricks, 5th with the XX', kismadar: 'first 6, 6th with the XXI',
+  nagymadar: 'first 7, 7th with the Skíz', uhu: '8th trick with the I', kultimo: 'last trick with this king', kuhu: '8th trick with this king' };
+function announcePanel(pd, h) {
+  const o = pd.options, s = ui.annSel;
+  const side = h.side[0];
+  let html = `<div class="ptitle">Announcements <span>${side === 'D' ? (h.declarer === 0 ? 'You are the declarer.' : 'You are the declarer’s secret partner.') : 'You are an opponent of ' + esc(N(h.declarer)) + '.'}</span></div><div class="annscroll">`;
+  const said = h.ann.round.filter(r => r.parts.length);
+  html += `<div class="grp"><h4>Announced so far</h4><div class="hint">${said.length ? said.map(r => `<b style="color:var(--cream)">${esc(N(r.p))}</b>${r.p === h.declarer ? ' (declarer)' : ''}: ${esc(r.parts.join(', '))}`).join('<br>') : 'Nothing yet.'}</div></div>`;
+  html += `<div class="hint" style="margin-bottom:6px">Below are <b>your options</b>. Tap any you want, then <b>Say it</b>, or just <b>Pass</b>.</div>`;
+  if (o.mandatory.length) html += `<div class="hint" style="margin-bottom:6px">Required this turn: ${o.mandatory.map(md => md.kind === 'kontraGame' ? 'kontra the game (the called card is in your discards)' : 'announce pagát ultimó (your invitation with only the pagát)').join('; ')}.</div>`;
+  if (o.declare) html += `<div class="grp"><h4>You may declare</h4><div class="row"><button class="chip ${HR() && HR().declare ? 'hint' : ''}" data-act="anndecl" aria-pressed="${s.declare ? 'true' : 'false'}">${o.declare} tarokks <small>+${o.declare === 9 ? 2 : 1} from each</small></button></div></div>`;
+  if (o.bonuses.length) {
+    html += `<div class="grp"><h4>You may announce for your side</h4><div class="row">`;
+    for (const b of o.bonuses) {
+      const def = E.BONUS[b.type];
+      const val = (BONUS_WHAT[b.type] ? BONUS_WHAT[b.type] + ' · ' : '') + (def.ann ? def.ann : b.type === 'double' ? '4× game' : '6× game');
+      html += `<button class="chip ${HR() && (HR().bonuses || []).includes(b.key) ? 'hint' : ''}" data-act="annb" data-k="${b.key}" aria-pressed="${s.bonuses.includes(b.key)}">${esc(b.label)} <small>${val}</small></button>`;
+    }
+    html += '</div></div>';
+  }
+  if (o.kontras.length) {
+    html += `<div class="grp"><h4>You may kontra (double) the other side’s</h4><div class="row">`;
+    for (const k of o.kontras) html += `<button class="chip ${HR() && (HR().kontras || []).includes(k.key) ? 'hint' : ''}" data-act="annk" data-k="${k.key}" aria-pressed="${s.kontras.includes(k.key)}">${esc(k.label)} <small>×2</small></button>`;
+    html += '</div></div>';
+  }
+  const any = s.declare || s.bonuses.length || s.kontras.length;
+  const rp = HR() && !HR().declare && !(HR().bonuses || []).length && !(HR().kontras || []).length;
+  html += `</div><div class="row" style="margin-top:4px"><button class="btn ${any ? 'primary' : ''} ${rp ? 'hint' : ''}" data-act="announce">${any ? 'Say it' : 'Pass'}</button><button class="btn" data-act="rules" data-sec="ann">What do these mean?</button></div>`;
+  return html;
+}
+function renderHand(pd, h) {
+  const el = $('#hand');
+  if (ui.fx === 'deal') { el.innerHTML = ''; el.classList.remove('two'); return; }
+  const cards = h.hands[0];
+  const human = pd.player === 0 && !ui.showTrick && !ui.fx;
+  let legal = null;
+  if (human && (pd.type === 'play' || pd.type === 'discard')) legal = pd.legal;
+  const newCards = (h.phase === 'exchange' && h.talonGot) ? h.talonGot[0] : [];
+  const cs = getComputedStyle(document.documentElement);
+  const cw = parseFloat(cs.getPropertyValue('--cw')) || 62;
+  const ch = parseFloat(cs.getPropertyValue('--ch')) || 96;
+  const W = el.clientWidth - 16;
+  const n = cards.length;
+  let rows = [cards];
+  const step = n > 1 ? Math.min(cw + 6, (W - cw) / (n - 1)) : 0;
+  if (step < 34 && n > 6) { const half = Math.ceil(n / 2); rows = [cards.slice(0, half), cards.slice(half)]; }
+  el.classList.toggle('two', rows.length === 2);
+  let html = '', idx = 0;
+  rows.forEach((row, ri) => {
+    const k = row.length;
+    const st = k > 1 ? Math.min(cw + 6, (W - cw) / (k - 1)) : 0;
+    const total = cw + st * (k - 1);
+    const x0 = 8 + Math.max(0, (W - total) / 2);
+    row.forEach((c, i) => {
+      const cls = [];
+      if (legal) cls.push(legal.includes(c) ? 'legal' : 'dim');
+      if (ui.sel.includes(c)) cls.push('sel');
+      if (newCards.includes(c)) cls.push('new');
+      if (ui.intro) cls.push('intro');
+      if (HR() && (HR().card === c || (HR().cards || []).includes(c))) cls.push('hintc');
+      const y = 14 + ri * (ch * 0.62);
+      const act = legal && legal.includes(c) ? 'tabindex="0" role="button" data-act="card"' : '';
+      const anim = ui.intro ? `animation-delay:${idx * 45}ms;` : '';
+      html += cardHTML(c, cls.join(' '), `style="left:${x0 + i * st}px;top:${y}px;z-index:${i + 1 + ri * 20};${anim}" ${act}`);
+      idx++;
+    });
+  });
+  el.innerHTML = html;
+}
+
+// ---------- modals ----------
+function renderModal() {
+  const m = ui.modal, el = $('#modal');
+  ui.modalShown = m;
+  if (!m) { el.innerHTML = ''; return; }
+  const h = V.hand;
+  let body = '';
+  if (m === 'result') body = resultHTML();
+  else if (m === 'over') body = overHTML();
+  else if (m === 'learn' || m === 'welcome') body = learnHTML(m === 'welcome');
+  else if (m === 'replay') body = replayHTML();
+  else if (m === 'stats') body = statsHTML();
+  else if (m === 'scores') body = scoresHTML();
+  else if (m === 'log') body = `<h2>Hand log</h2>` + h.log.map(l => `<div class="logl ${l.kind}">${esc(l.text)}</div>`).join('');
+  else if (m === 'rules') body = rulesHTML();
+  else if (m === 'settings') body = settingsHTML();
+  else if (m === 'lasttrick') {
+    const t = h.play.tricks[h.play.tricks.length - 1];
+    body = `<h2>Last trick</h2>${trickRow(t)}<p>${esc(N(t.winner))} won it.</p>`;
+  } else if (m === 'mytricks') {
+    const mine = tricksWon(h, 0);
+    if (!ui.prefs.review) {
+      const t = h.play.tricks[h.play.tricks.length - 1];
+      body = `<h2>Your tricks</h2><p>You have won ${mine.length} trick${mine.length === 1 ? '' : 's'}. Looking back at won tricks is switched off in Settings, so only the last trick on the table can be viewed.</p>${t ? trickRow(t) : ''}`;
+    } else {
+      const pts = mine.reduce((s, t) => s + t.cards.reduce((a, x) => a + E.points(x.c), 0), 0);
+      body = `<h2>Your tricks</h2><p class="hint">${mine.length} trick${mine.length === 1 ? '' : 's'}, ${pts} card points (your own pile only; your partner keeps theirs).</p>` + mine.map(trickRow).join('');
+    }
+  }
+  el.innerHTML = `<div class="modal" data-act="closebg"><div class="sheet" role="dialog" aria-modal="true"><button class="hbtn close" data-act="close">Close</button>${body}</div></div>`;
+}
+function trickRow(t, extra) {
+  return `<div class="trk"><div class="no">Trick ${t.no}${extra ? `<br><span class="hint">${extra}</span>` : ''}</div>` + t.cards.map(x =>
+    `<div class="${x.p === t.winner ? 'w' : ''}">${cardHTML(x.c)}<div class="who">${esc(N(x.p))}</div></div>`).join('') + '</div>';
+}
+function fmt(v) { return v > 0 ? `<span class="pos">+${v}</span>` : v < 0 ? `<span class="neg">${v}</span>` : '0'; }
+function resultHTML() {
+  const h = V.hand, r = h.result;
+  if (!r) return '';
+  if (r.kind === 'passedout') return `<h2>Thrown in</h2><p>Nobody bid. The same dealer deals again and the next four deals are played at double stakes.</p>${talonHTML(h)}<div class="row"><button class="btn primary" data-act="next">Deal again</button></div>`;
+  if (r.kind === 'annulled') return `<h2>Hand annulled</h2><p>The same dealer deals again, and the next four deals are at double stakes.</p><div class="row"><button class="btn primary" data-act="next">Deal again</button></div>`;
+  let s = '';
+  const names = T => [0, 1, 2, 3].filter(q => h.side && h.side[q] === T).map(q => esc(N(q))).join(' & ');
+  if (r.kind === 'proba') {
+    s += `<h2>No honour in the talon</h2><p>${esc(N(h.declarer))} bid Three without an honour and didn’t find one. The game is lost: they pay the game value (${h.level}) to each player.</p>`;
+  } else {
+    const dw = r.ptsD >= 48;
+    s += `<h2>${dw ? 'Declarers win' : 'Defenders win'}</h2><div class="big">${r.ptsD} – ${r.ptsO}</div>`;
+    s += `<p class="hint">${esc(N(h.declarer))} bid ${E.BID_NAMES[h.level]} (game worth ${h.level}) and called the ${E.roman(E.tv(h.called))}` +
+      (h.alone ? ', playing alone.' : `: partner ${esc(N(h.partner))}.`) + ' Declarers need 48 of the 94 card points; defenders win with 47.</p>';
+    // 1. card points
+    const P = r.pile;
+    s += `<h3>Card points</h3><table class="lines"><tr><th></th><th>Declarers<br><span class="hint">${names('D')}</span></th><th>Defenders<br><span class="hint">${names('O')}</span></th></tr>
+      <tr><td>Tricks won</td><td>${plural(P.D.tricks, 'trick')} · ${P.D.trickPts}</td><td>${plural(P.O.tricks, 'trick')} · ${P.O.trickPts}</td></tr>
+      <tr><td>Discards <span class="hint">(declarer’s count for declarers)</span></td><td>${P.D.skartPts}</td><td>${P.O.skartPts}</td></tr>
+      <tr><td><b>Total</b></td><td><b>${r.ptsD}</b>${dw ? ' ✓' : ''}</td><td><b>${r.ptsO}</b>${dw ? '' : ' ✓'}</td></tr></table>`;
+    s += talonHTML(h);
+    s += `<div class="row" style="margin:6px 0"><button class="btn" data-act="toggletricks">${ui.showAllTricks ? 'Hide' : 'Show'} every trick</button><button class="btn" data-act="replaythis">Replay this hand</button></div>`;
+    if (ui.showAllTricks) s += allTricksHTML(h);
+    // 2. how the points were earned
+    s += `<h3>How the score was earned</h3><p class="hint">Plus counts for the declarers, minus for the defenders.</p><table class="lines">` +
+      r.lines.map(l => `<tr><td>${esc(l.text)}${l.calc ? `<br><span class="hint">${esc(l.calc)}</span>` : ''}</td><td>${fmt(l.v)}</td></tr>`).join('') +
+      `<tr><td><b>Net for each declarer${h.alone ? ' (alone: ×3)' : ''}</b></td><td><b>${fmt(r.net)}</b></td></tr></table>`;
+  }
+  // 3. settlement
+  s += '<h3>Who pays whom</h3><table class="lines"><tr><th></th>' + [0, 1, 2, 3].map(p => `<th>${esc(N(p))}</th>`).join('') + '</tr>';
+  if (r.rows) {
+    for (const row of r.rows) s += `<tr><td>${esc(row.label)}</td>${row.deltas.map(v => `<td>${fmt(v)}</td>`).join('')}</tr>`;
+    if (r.mult > 1) {
+      s += `<tr><td>Subtotal</td>${r.subtotal.map(v => `<td>${fmt(v)}</td>`).join('')}</tr>`;
+      s += `<tr><td>× ${r.mult} (double stakes)</td>${r.deltas.map(() => '<td></td>').join('')}</tr>`;
+    }
+  }
+  s += `<tr><td><b>This hand</b></td>${r.deltas.map(v => `<td><b>${fmt(v)}</b></td>`).join('')}</tr>` +
+    '<tr><td>Coins now</td>' + M.scores.map(v => `<td><b class="${v <= 0 ? 'neg' : ''}">${v}</b></td>`).join('') + '</tr></table>';
+  if (r.xxiDoubleNext) s += `<p class="hint">The XXI was caught, so the next four deals are at double stakes.</p>`;
+  if (ui.tut) s += `<div class="row" style="margin-top:12px">${ui.tut.lesson < LESSONS.length - 1 ? '<button class="btn primary" data-act="nextlesson">Next lesson</button>' : ''}<button class="btn" data-act="lessonagain">Play it again</button><button class="btn" data-act="exittut">Finish tutorial</button></div>`;
+  else if (M.over) s += `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="showover">Final standings</button></div>`;
+  else s += `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="next">Next hand</button></div>`;
+  return s;
+}
+function allTricksHTML(h) {
+  const pts = t => t.cards.reduce((a, x) => a + E.points(x.c), 0);
+  let s = '';
+  for (const T of ['D', 'O']) {
+    const ts = h.play.tricks.filter(t => h.side[t.winner] === T);
+    s += `<h4 style="margin:10px 0 2px;color:var(--gold2)">${T === 'D' ? 'Declarers’' : 'Defenders’'} tricks</h4>`;
+    s += ts.length ? ts.map(t => trickRow(t, `${pts(t)} pts`)).join('') : '<p class="hint">None.</p>';
+    const disc = [0, 1, 2, 3].filter(q => h.skartBy[q].length && (T === 'D' ? q === h.declarer : q !== h.declarer));
+    for (const q of disc) s += `<div class="trk"><div class="no">${q === 0 ? 'Your' : esc(N(q)) + '’s'} discards${T === 'O' && h.side[q] === 'D' ? ' (they still count for the defenders)' : ''}<br><span class="hint">${h.skartBy[q].reduce((a, c) => a + E.points(c), 0)} pts</span></div>${h.skartBy[q].map(c => `<div>${cardHTML(c)}</div>`).join('')}</div>`;
+  }
+  return s;
+}
+function overHTML() {
+  const o = M.over;
+  const order = [0, 1, 2, 3].sort((a, b) => M.scores[b] - M.scores[a]);
+  const win = o.winners.map(N).join(' and ');
+  let s = `<h2>${o.winners.includes(0) ? (o.winners.length > 1 ? 'You share the win!' : 'You win!') : esc(win) + ' win' + (o.winners.length > 1 ? '' : 's')}</h2>`;
+  s += `<p>${esc(o.broke.map(N).join(' and '))} ran out of gold after ${o.handNo} hand${o.handNo > 1 ? 's' : ''}.</p>`;
+  s += '<table><tr><th>Player</th><th>Coins</th></tr>' + order.map((p, i) => `<tr><td>${i + 1}. ${esc(N(p))}${p ? ` <span class="hint">${LEVEL_NAMES[M.levels[p]]}</span>` : ''}</td><td><b class="${M.scores[p] <= 0 ? 'neg' : ''}">${M.scores[p]}</b></td></tr>`).join('') + '</table>';
+  s += `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="newmatch">New game</button><button class="btn" data-act="scores">Score sheet</button></div>`;
+  return s;
+}
+function scoresHTML() {
+  let s = `<h2>Score sheet</h2><table><tr><th>#</th>${[0, 1, 2, 3].map(p => `<th>${esc(N(p))}</th>`).join('')}</tr>`;
+  for (const r of M.history) {
+    const lab = r.kind === 'passedout' ? 'thrown in' : r.kind === 'annulled' ? 'annulled' : `${N(r.declarer)} ${E.BID_NAMES[r.level]}`;
+    s += `<tr><td>${r.no} <span class="hint">${esc(lab)}</span></td>${r.deltas.map(v => `<td>${fmt(v)}</td>`).join('')}</tr>`;
+  }
+  s += `<tr><td><b>Coins</b> <span class="hint">(from ${M.startCoins})</span></td>${M.scores.map(v => `<td><b class="${v <= 0 ? 'neg' : ''}">${v}</b></td>`).join('')}</tr></table>`;
+  if (M.doubles.length) s += `<p class="hint">Double stakes active: ${M.doubles.map(x => x + ' deal' + (x > 1 ? 's' : '') + ' left').join(', ')}.</p>`;
+  s += `<div class="row" style="margin-top:10px"><button class="btn" data-act="stats">Your stats</button>${M.lastHand ? '<button class="btn" data-act="replaylast">Replay last hand</button>' : ''}</div>`;
+  return s;
+}
+function settingsHTML() {
+  const p = ui.prefs;
+  const lv = [1, 2, 3].map(seat => `<div class="set"><div>${esc(N(seat))}</div><div class="row">${AI.LEVELS.map(k =>
+    `<button class="chip" data-act="level" data-seat="${seat}" data-v="${k}" aria-pressed="${M.levels[seat] === k}">${LEVEL_NAMES[k]}</button>`).join('')}</div></div>`).join('');
+  return `<h2>Settings</h2>
+  <h3>AI players</h3>${lv}
+  <p class="hint">Novice plays loosely and forgets announcements. Intermediate plays sound rules of thumb. Seasoned also counts cards and tracks who is out of which suit. Pro tries each card against dozens of guesses at the hidden hands and keeps the best. Changes apply straight away.</p>
+  <h3>Helper</h3>
+  <div class="set"><div>Suggestions from Mitz &amp; Simz<div class="hint">Recommended bids, discards, calls, announcements and cards, with the reason why. The two cats take turns, one hand each.</div></div><div class="row">${[['off', 'Off'], ['ask', 'On request'], ['always', 'Every move']].map(([k, l]) => `<button class="chip" data-act="helper" data-v="${k}" aria-pressed="${p.helper === k}">${l}</button>`).join('')}</div></div>
+  <h3>Table</h3>
+  <div class="set"><div>Illustrated bonuses<div class="hint">Adds centrum, the birds, the uhus and king ultimó. Applies from the next deal.</div></div><button class="chip" data-act="toggleill" aria-pressed="${p.illustrated}">${p.illustrated ? 'On' : 'Off'}</button></div>
+  <div class="set"><div>Caught XXI doubles the next four deals</div><button class="chip" data-act="togglexxi" aria-pressed="${p.xxiDouble}">${p.xxiDouble ? 'On' : 'Off'}</button></div>
+  <div class="set"><div>Card art</div><div class="row"><button class="chip" data-act="art" data-v="ms" aria-pressed="${p.art === 'ms'}">Mitz &amp; Simz</button><button class="chip" data-act="art" data-v="plain" aria-pressed="${p.art !== 'ms'}">Plain</button></div></div>
+  <div class="set"><div>Look back at my won tricks<div class="hint">Many tables only allow a look at the last trick.</div></div><button class="chip" data-act="togglereview" aria-pressed="${p.review}">${p.review ? 'On' : 'Off'}</button></div>
+  <div class="set"><div>Sound effects</div><button class="chip" data-act="togglesound" aria-pressed="${p.sound}">${p.sound ? 'On' : 'Off'}</button></div>
+  <div class="set"><div>Game speed</div><div class="row">${['relaxed', 'normal', 'fast'].map(k => `<button class="chip" data-act="speed" data-v="${k}" aria-pressed="${p.speed === k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div></div>
+  <h3>New game</h3>
+  <div class="set"><div>Starting gold<div class="hint">Everyone starts with this many coins; the game ends when someone runs out.</div></div><div class="row">${[50, 100, 200].map(v => `<button class="chip" data-act="coins" data-v="${v}" aria-pressed="${p.coins === v}">${v}</button>`).join('')}</div></div>
+  <div class="set"><div>Start a new game<div class="hint">Clears the score sheet and deals afresh.</div></div><button class="btn" data-act="newmatch">New game</button></div>`;
+}
+
+// ---------- animations ----------
+function fxCard(x, y, face) {
+  const fx = $('#fx');
+  const wrap = document.createElement('div');
+  wrap.innerHTML = cardHTML(face || null);
+  const el = wrap.firstElementChild;
+  const app = $('#app').getBoundingClientRect();
+  el.style.left = (x - app.left) + 'px';
+  el.style.top = (y - app.top) + 'px';
+  el.style.translate = '-50% -50%';
+  fx.appendChild(el);
+  return el;
+}
+function finishFx() {
+  if (!ui.fx) return;
+  if (ui.fxTimer) clearTimeout(ui.fxTimer);
+  $('#fx').getAnimations({ subtree: true }).forEach(a => a.cancel());
+  $('#fx').innerHTML = '';
+  const kind = ui.fx;
+  ui.fx = null;
+  if (kind === 'deal') { ui.dealtHand = M.handNo; ui.intro = !reduceMotion; }
+  render(); schedule();
+}
+function runDeal() {
+  ui.fx = 'deal';
+  render();
+  if (reduceMotion) { finishFx(); return; }
+  const tr = $('#table').getBoundingClientRect();
+  const c = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
+  const sp = SPEEDS[ui.prefs.speed] || 1;
+  // shuffle: two half-decks riffle together twice
+  const left = [], right = [];
+  for (let i = 0; i < 5; i++) { left.push(fxCard(c.x, c.y - i)); right.push(fxCard(c.x, c.y - i)); }
+  const riffle = 330 * sp;
+  sfx('shuffle');
+  [left, right].forEach((half, side) => half.forEach((el, i) => el.animate([
+    { transform: 'translate(0,0)' }, { transform: `translate(${side ? 46 : -46}px,${-i}px) rotate(${side ? 8 : -8}deg)` },
+    { transform: 'translate(0,0)' }, { transform: `translate(${side ? 46 : -46}px,${-i}px) rotate(${side ? 8 : -8}deg)` }, { transform: 'translate(0,0)' },
+  ], { duration: riffle * 2, easing: 'ease-in-out', delay: i * 18 * sp })));
+  const startDeal = riffle * 2 + 120 * sp;
+  // targets
+  const target = p => {
+    if (p === 0) { const r = $('#hand').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+    if (p === 'talon') return { x: c.x, y: c.y };
+    const av = document.querySelector(`.seat.s${p} .av`);
+    return center(av.getBoundingClientRect());
+  };
+  const seq = [];
+  for (let i = 0; i < 6; i++) seq.push('talon');
+  const d = M.hand.dealer;
+  for (const pk of [5, 4]) for (let i = 1; i <= 4; i++) for (let j = 0; j < pk; j++) seq.push((d + i) % 4);
+  const step = 40 * sp, fly = 300 * sp;
+  seq.forEach((p, i) => {
+    const t = target(p);
+    const el = fxCard(c.x, c.y);
+    el.style.opacity = '0';
+    const a = el.animate([
+      { opacity: 1, transform: 'translate(0,0) rotate(0deg)' },
+      { opacity: p === 'talon' ? 1 : 0.9, transform: `translate(${t.x - c.x + (p === 'talon' ? (i - 3) * 4 : 0)}px,${t.y - c.y}px) rotate(${p === 'talon' ? 0 : 200}deg) scale(${p === 'talon' ? 0.7 : 0.55})` },
+    ], { duration: fly, delay: startDeal + i * step, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards' });
+    a.onfinish = () => { sfx('deal'); if (p !== 'talon') el.remove(); };
+  });
+  setTimeout(() => { left.concat(right).forEach(el => el.remove()); }, startDeal);
+  ui.fxTimer = setTimeout(finishFx, startDeal + seq.length * step + fly + 80);
+}
+function runTalon(got) {
+  // talon cards fly from the centre to whoever receives them
+  ui.fx = 'talon';
+  render();
+  if (reduceMotion) { finishFx(); return; }
+  const tr = $('#table').getBoundingClientRect();
+  const c = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
+  const sp = SPEEDS[ui.prefs.speed] || 1;
+  let i = 0;
+  const decl = M.hand.declarer;
+  for (let k = 0; k < 4; k++) {
+    const p = (decl + k) % 4;
+    for (let j = 0; j < got[p].length; j++) {
+      const el = fxCard(c.x + (i - 3) * 5, c.y);
+      let t;
+      if (p === 0) { const r = $('#hand').getBoundingClientRect(); t = { x: r.left + r.width / 2, y: r.top + 30 }; }
+      else t = center(document.querySelector(`.seat.s${p} .av`).getBoundingClientRect());
+      el.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${t.x - c.x}px,${t.y - c.y}px) scale(.55)`, opacity: .4 }],
+        { duration: 380 * sp, delay: i * 110 * sp, easing: 'ease-in', fill: 'forwards' }).onfinish = () => sfx('deal');
+      i++;
+    }
+  }
+  ui.fxTimer = setTimeout(finishFx, (i * 110 + 420) * sp);
+}
+
+// ---------- flow ----------
+function syncBubbles() {
+  const h = M.hand;
+  for (let i = ui.logSeen; i < h.log.length; i++) {
+    const l = h.log[i];
+    if (l.to != null && l.to !== 0) continue;
+    if ((l.kind === 'bid' || l.kind === 'ann') && l.p >= 0) ui.bubbles[l.p] = l.text.replace(/^[^:]+:\s*/, '');
+  }
+  ui.logSeen = h.log.length;
+  if (h.phase === 'play' && h.play.trick.length > 0) ui.bubbles = {};
+}
+function doAct(p, a, fromRect) {
+  const h = M.hand;
+  const before = h.play ? h.play.tricks.length : 0;
+  const phase = h.phase;
+  const hatBefore = h.hat;
+  E.act(M, p, a);
+  ui.err = '';
+  if (a.type === 'play') sfx('card');
+  else if (a.type === 'bid' || a.type === 'hold') sfx('bid');
+  else if (a.type === 'announce') { if ((a.kontras || []).length) sfx('kontra'); else if ((a.bonuses || []).length || a.declare) sfx('bid'); }
+  if (M.hand === h && h.hat >= 0 && hatBefore < 0) setTimeout(() => sfx('hat'), 300);
+  if (a.type === 'next') { ui.bubbles = {}; ui.logSeen = 0; }
+  syncBubbles();
+  const h2 = M.hand;
+  if (phase === 'bidding' && h2.phase !== 'bidding' && h2.phase !== 'passedout') ui.pendingTalon = h2.talonGot;
+  if (phase === 'bidding' && h2.phase !== 'bidding') ui.bubbles = {};
+  if (a.type === 'play') {
+    ui.anim = { card: a.card, p, from: fromRect ? center(fromRect) : null };
+    if (h2.play && h2.play.tricks.length > before) {
+      ui.showTrick = h2.play.tricks[h2.play.tricks.length - 1];
+      ui.collecting = false;
+      if (ui.tut) ui.tut.note = trickNote(ui.showTrick);
+    }
+  }
+  save();
+}
+function schedule() {
+  clearTimeout(ui.timer);
+  if (ui.fx || ui.modal === 'welcome') return;
+  if (ui.dealtHand !== M.handNo && M.hand.phase === 'bidding' && M.hand.bid.actions.length === 0) { runDeal(); return; }
+  if (ui.pendingTalon) { const g = ui.pendingTalon; ui.pendingTalon = null; runTalon(g); return; }
+  if (ui.showTrick) {
+    ui.timer = setTimeout(() => { ui.collecting = true; sfx('trick'); render(); ui.timer = setTimeout(endTrickShow, 450); }, delay(1100));
+    return;
+  }
+  const pd = E.pending(M);
+  if (pd.type === 'end' || pd.type === 'over') {
+    const key = M.seed + ':' + M.handNo + (ui.tut ? ':t' : '');
+    if (ui.recorded !== key) {
+      ui.recorded = key;
+      recordHand();
+      const d = M.hand.result ? M.hand.result.deltas[0] : 0;
+      if (M.over && !ui.tut) sfx(M.over.winners.includes(0) ? 'fanfare' : 'coinDown');
+      else sfx(d > 0 ? 'coinUp' : d < 0 ? 'coinDown' : 'bid');
+    }
+    if (!ui.modal) { ui.modal = 'result'; render(); }
+    return;
+  }
+  if (pd.player === 0) return;
+  const d = pd.type === 'discard' ? 300 : pd.type === 'play' ? 700 : 850;
+  ui.timer = setTimeout(() => {
+    try { doAct(pd.player, AI.choose(M, M.levels[pd.player])); } catch (e) { console.error(e); ui.err = 'AI error: ' + e.message; }
+    render(); schedule();
+  }, delay(d));
+}
+function endTrickShow() {
+  ui.showTrick = null; ui.collecting = false;
+  render(); schedule();
+}
+function human(a, fromRect) {
+  try { doAct(0, a, fromRect); }
+  catch (e) { ui.err = e.message; render(); return; }
+  ui.sel = []; ui.annSel = { declare: 0, bonuses: [], kontras: [] };
+  if (ui.tut) { if (ui.tut.pendingSeen) ui.tut.seen[ui.tut.pendingSeen] = true; if (a.type === 'announce') ui.tut.seen.role = true; ui.tut.showMe = false; if (a.type !== 'play' || ui.showTrick) ui.tut.note = ui.showTrick ? ui.tut.note : ''; }
+  render(); schedule();
+}
+
+// ---------- events ----------
+document.addEventListener('click', ev => {
+  actx(); // browsers only allow sound after a tap
+  const t = ev.target.closest('[data-act]');
+  if (!t) return;
+  const act = t.dataset.act;
+  const pd = E.pending(M);
+  switch (act) {
+    case 'skip':
+      if (ui.fx) { finishFx(); return; }
+      if (ui.showTrick && !ui.collecting) { clearTimeout(ui.timer); ui.collecting = true; sfx('trick'); render(); ui.timer = setTimeout(endTrickShow, 300); }
+      return;
+    case 'bid': { const o = pd.options[+t.dataset.i]; human({ type: o.type, level: o.level }); return; }
+    case 'card': {
+      const c = t.dataset.c;
+      if (pd.type === 'play' && pd.player === 0 && !ui.showTrick && !ui.fx) human({ type: 'play', card: c }, t.getBoundingClientRect());
+      else if (pd.type === 'discard' && pd.player === 0) {
+        if (ui.sel.includes(c)) ui.sel = ui.sel.filter(x => x !== c);
+        else if (ui.sel.length < pd.count) ui.sel.push(c);
+        else { ui.sel.shift(); ui.sel.push(c); }
+        render();
+      }
+      return;
+    }
+    case 'discard': human({ type: 'discard', cards: ui.sel.slice() }); return;
+    case 'annul': human({ type: 'annul', yes: t.dataset.y === '1' }); return;
+    case 'call': human({ type: 'call', card: t.dataset.c }); return;
+    case 'anndecl': ui.annSel.declare = ui.annSel.declare ? 0 : pd.options.declare; ui.err = ''; render(); return;
+    case 'annb': case 'annk': {
+      const arr = act === 'annb' ? ui.annSel.bonuses : ui.annSel.kontras, k = t.dataset.k;
+      const i = arr.indexOf(k); if (i >= 0) arr.splice(i, 1); else arr.push(k);
+      ui.err = ''; render(); return;
+    }
+    case 'announce': human(Object.assign({ type: 'announce' }, ui.annSel)); return;
+    case 'next': ui.modal = null; renderModal(); human({ type: 'next' }); return;
+    case 'showresult': ui.modal = 'result'; render(); return;
+    case 'toggletricks': ui.showAllTricks = !ui.showAllTricks; renderModal(); return;
+    case 'replaythis': ui.replay = { hand: JSON.parse(JSON.stringify(V.hand)), step: 0, back: 'result' }; ui.modal = 'replay'; renderModal(); return;
+    case 'replaylast': ui.replay = { hand: M.lastHand, step: 0, back: 'scores' }; ui.modal = 'replay'; renderModal(); return;
+    case 'rp': ui.replay.step = Math.max(0, Math.min(replaySteps(ui.replay.hand) - 1, ui.replay.step + +t.dataset.d)); renderModal(); $('.sheet').scrollTop = 0; return;
+    case 'stats': ui.modal = 'stats'; renderModal(); return;
+    case 'resetstats': saveStats(newStats()); renderModal(); return;
+    case 'togglesound': ui.prefs.sound = !ui.prefs.sound; save(); renderModal(); if (ui.prefs.sound) sfx('bid'); return;
+    case 'showover': ui.modal = 'over'; render(); return;
+    case 'learn': ui.modal = 'learn'; render(); renderModal(); return;
+    case 'lesson': ui.modal = null; startLesson(+t.dataset.i); return;
+    case 'nextlesson': ui.modal = null; startLesson(ui.tut.lesson + 1); return;
+    case 'lessonagain': ui.modal = null; startLesson(ui.tut.lesson); return;
+    case 'exittut': ui.modal = null; exitTutorial(); return;
+    case 'showme': if (ui.tut) { ui.tut.showMe = !ui.tut.showMe; render(); } return;
+    case 'playnow': ui.modal = null; renderModal(); schedule(); return;
+    case 'rulesref': ui.modal = 'rules'; render(); renderModal(); if (t.dataset.sec) { const e = document.getElementById('r-' + t.dataset.sec); if (e) e.scrollIntoView(); } return;
+    case 'togglexxi': ui.prefs.xxiDouble = !ui.prefs.xxiDouble; M.xxiDouble = ui.prefs.xxiDouble; save(); renderModal(); return;
+    case 'art': ui.prefs.art = t.dataset.v; save(); render(); renderModal(); return;
+    case 'coins': ui.prefs.coins = +t.dataset.v; save(); renderModal(); return;
+    case 'lasttrick': case 'mytricks': ev.stopPropagation(); ui.modal = act; render(); return;
+    case 'scores': case 'log': case 'rules': case 'settings':
+      if (ui.tut && act === 'settings') { ui.err = ''; }
+      ui.modal = act; render(); renderModal();
+      if (act === 'rules' && t.dataset.sec) { const s = document.getElementById('r-' + t.dataset.sec); if (s) s.scrollIntoView(); }
+      return;
+    case 'close': { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); return; }
+    case 'closebg': if (ev.target === t) { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); } return;
+    case 'toggleill': ui.prefs.illustrated = !ui.prefs.illustrated; M.illustrated = ui.prefs.illustrated; save(); renderModal(); return;
+    case 'togglereview': ui.prefs.review = !ui.prefs.review; save(); renderModal(); return;
+    case 'level': M.levels[+t.dataset.seat] = t.dataset.v; ui.prefs.levels = M.levels.slice(); save(); render(); renderModal(); return;
+    case 'helper': ui.prefs.helper = t.dataset.v; save(); render(); renderModal(); return;
+    case 'hint': ui.hintKey = ui.coach.curKey; render(); return;
+    case 'hidehint': ui.hintKey = null; ui.hideKey = ui.coach.curKey; render(); return;
+    case 'speed': ui.prefs.speed = t.dataset.v; save(); renderModal(); return;
+    case 'newmatch':
+      clearTimeout(ui.timer);
+      M = E.newMatch({ illustrated: ui.prefs.illustrated, levels: ui.prefs.levels.slice(), xxiDouble: ui.prefs.xxiDouble, startCoins: ui.prefs.coins });
+      ui.modal = null; ui.bubbles = {}; ui.logSeen = 0; ui.showTrick = null; ui.sel = []; ui.dealtHand = 0;
+      save(); render(); schedule(); return;
+  }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && ui.modal) { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); }
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#hand .card[data-act]')) { ev.preventDefault(); ev.target.click(); }
+});
+let rsz; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (!ui.fx) render(); }, 120); });
+
+// ---------- sound (synthesised, no files) ----------
+const SFX = { ctx: null, lastDeal: 0 };
+function actx() {
+  if (!ui.prefs.sound) return null;
+  try {
+    if (!SFX.ctx) SFX.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (SFX.ctx.state === 'suspended') SFX.ctx.resume();
+  } catch (e) { SFX.ctx = null; }
+  return SFX.ctx;
+}
+function sfxNoise(ctx, t, dur, freq, gain, q) {
+  const n = Math.max(1, Math.floor(ctx.sampleRate * dur)), buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1.2;
+  const g = ctx.createGain(); g.gain.value = gain;
+  src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t);
+}
+function sfxTone(ctx, t, freq, dur, gain, type) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+function sfx(name) {
+  const ctx = actx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  try {
+    switch (name) {
+      case 'card': sfxNoise(ctx, t, 0.07, 2600, 0.5); sfxNoise(ctx, t + 0.01, 0.05, 900, 0.25); break;
+      case 'deal': if (performance.now() - SFX.lastDeal > 70) { SFX.lastDeal = performance.now(); sfxNoise(ctx, t, 0.04, 3200, 0.18); } break;
+      case 'shuffle': for (let i = 0; i < 14; i++) sfxNoise(ctx, t + i * 0.045 + Math.random() * 0.01, 0.035, 2200 + Math.random() * 1500, 0.22); break;
+      case 'trick': sfxNoise(ctx, t, 0.22, 1400, 0.25, 0.6); break;
+      case 'bid': sfxTone(ctx, t, 660, 0.12, 0.08, 'triangle'); break;
+      case 'kontra': sfxTone(ctx, t, 392, 0.18, 0.12, 'square'); sfxTone(ctx, t + 0.09, 523, 0.22, 0.1, 'square'); break;
+      case 'coinUp': [1568, 2093, 2637].forEach((f, i) => sfxTone(ctx, t + i * 0.07, f, 0.35, 0.09)); break;
+      case 'coinDown': [1046, 784].forEach((f, i) => sfxTone(ctx, t + i * 0.1, f, 0.4, 0.08)); break;
+      case 'fanfare': [523, 659, 784, 1046].forEach((f, i) => sfxTone(ctx, t + i * 0.12, f, 0.45, 0.1, 'triangle')); break;
+      case 'hat': sfxTone(ctx, t, 220, 0.5, 0.12, 'sawtooth'); sfxTone(ctx, t + 0.15, 165, 0.6, 0.1, 'sawtooth'); break;
+    }
+  } catch (e) {}
+}
+
+// ---------- the talon on the summary ----------
+function talonHTML(h) {
+  if (!h.talon || !h.talon.length || h.talon[0] == null) return '';
+  const who = {};
+  if (h.talonGot) h.talonGot.forEach((cs, q) => cs.forEach(c => (who[c] = q)));
+  return `<h3>The talon</h3><p class="hint">The six face-down cards${h.talonGot ? ', and who picked each one up' : ''}.</p><div class="cardrow">` +
+    h.talon.map(c => `<div style="text-align:center">${cardHTML(c)}<div class="hint" style="font-size:10px">${who[c] != null ? esc(N(who[c])) : ''}</div></div>`).join('') + '</div>';
+}
+
+// ---------- replay a finished hand, trick by trick, with every hand open ----------
+function replaySteps(h) { return 3 + h.play.tricks.length + 1; } // deal, talon & bidding, announcements, tricks, result
+function replayHTML() {
+  const R = ui.replay, h = R.hand, step = R.step, total = replaySteps(h);
+  const playHand = q => h.dealt[q].concat(h.talonGot ? h.talonGot[q] : []).filter(c => !h.skartBy[q].includes(c));
+  const role = q => q === h.declarer ? 'declarer' : h.side && h.side[q] === 'D' ? 'partner' : 'defender';
+  const handsAt = k => [0, 1, 2, 3].map(q => { const gone = new Set(); h.play.tricks.slice(0, k).forEach(t => t.cards.forEach(x => gone.add(x.c))); return E.sortHand(playHand(q).filter(c => !gone.has(c))); });
+  const rowsOf = (hs, mark) => [0, 1, 2, 3].map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${esc(N(q))}</b><br><span class="hint">${role(q)}</span></div><div class="cardrow" style="margin:0">${hs[q].map(c => cardHTML(c, mark && mark(c) ? 'hintc' : '')).join('')}</div></div>`).join('');
+  let title, body = '';
+  if (step === 0) {
+    title = 'The deal';
+    body = `<p class="hint">Everyone’s nine cards as dealt, and the talon.</p>` + rowsOf([0, 1, 2, 3].map(q => h.dealt[q])) + talonHTML(h);
+  } else if (step === 1) {
+    title = 'Bidding, talon and discards';
+    body = `<div class="hint">${h.bid.actions.map(a => `<b style="color:var(--cream)">${esc(N(a.p))}</b>: ${a.type === 'pass' ? 'pass' : a.type === 'hold' ? 'hold ' + E.BID_NAMES[a.level] : E.BID_NAMES[a.level] + (a.cue ? ' (shows the ' + E.roman(E.tv(a.cue)) + ')' : '')}`).join(' · ')}</div>`;
+    body += `<p>${esc(N(h.declarer))} won the bidding at ${E.BID_NAMES[h.level]} and called the ${E.roman(E.tv(h.called))}${h.alone ? ', playing alone' : ` (held by ${esc(N(h.partner))})`}.</p>`;
+    body += [0, 1, 2, 3].filter(q => h.talonGot[q].length).map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${esc(N(q))}</b><br><span class="hint">took / discarded</span></div><div class="cardrow" style="margin:0">${h.talonGot[q].map(c => cardHTML(c)).join('')}<span style="align-self:center;padding:0 4px">→</span>${h.skartBy[q].map(c => cardHTML(c)).join('')}</div></div>`).join('');
+  } else if (step === 2) {
+    title = 'Announcements';
+    const said = h.ann.round.filter(r => r.parts.length);
+    body = said.length ? said.map(r => `<p><b>${esc(N(r.p))}</b>: ${esc(r.parts.join(', '))}</p>`).join('') : '<p>Everyone passed.</p>';
+    body += `<p class="hint">Hands going into the play:</p>` + rowsOf(handsAt(0));
+  } else if (step < total - 1) {
+    const k = step - 3, t = h.play.tricks[k];
+    let ptsD = 0, ptsO = 0;
+    h.play.tricks.slice(0, k + 1).forEach(tt => { const v = tt.cards.reduce((a, x) => a + E.points(x.c), 0); if (h.side[tt.winner] === 'D') ptsD += v; else ptsO += v; });
+    title = `Trick ${k + 1} of 9`;
+    body = trickRow(t, `${t.cards.reduce((a, x) => a + E.points(x.c), 0)} pts`) + `<p>${t.winner === 0 ? 'You win' : esc(N(t.winner)) + ' wins'} with the ${E.cardName(t.wcard)}. Running card points: declarers ${ptsD}, defenders ${ptsO} (discards not yet counted).</p>`;
+    const played = new Set(t.cards.map(x => x.c));
+    body += `<p class="hint">Hands before this trick (the cards played are highlighted):</p>` + rowsOf(handsAt(k), c => played.has(c));
+  } else {
+    title = 'Result';
+    const r = h.result;
+    body = `<div class="big">${r.ptsD} – ${r.ptsO}</div><table class="lines">` + r.lines.map(l => `<tr><td>${esc(l.text)}${l.calc ? `<br><span class="hint">${esc(l.calc)}</span>` : ''}</td><td>${fmt(l.v)}</td></tr>`).join('') + `</table>` +
+      '<table class="lines" style="margin-top:8px"><tr>' + [0, 1, 2, 3].map(q => `<th>${esc(N(q))}</th>`).join('') + '</tr><tr>' + r.deltas.map(v => `<td>${fmt(v)}</td>`).join('') + '</tr></table>';
+  }
+  body = `<div class="rp">${body}</div>`;
+  return `<h2>Replay: ${title}</h2><div class="row" style="margin-bottom:8px"><button class="btn" data-act="rp" data-d="-1" ${step ? '' : 'disabled'}>◀ Back</button><button class="btn primary" data-act="rp" data-d="1" ${step < total - 1 ? '' : 'disabled'}>Next ▶</button><span class="hint">Step ${step + 1} of ${total}</span></div>` + body;
+}
+
+// ---------- lifetime stats (this browser only) ----------
+const STATS_KEY = 'msTarokk.stats';
+function loadStats() { try { return JSON.parse(localStorage.getItem(STATS_KEY) || 'null') || newStats(); } catch (e) { return newStats(); } }
+function newStats() { return { hands: 0, thrown: 0, roles: { declarer: [0, 0], partner: [0, 0], defender: [0, 0] }, bids: { 1: [0, 0], 2: [0, 0], 3: [0, 0], 4: [0, 0] }, coins: 0, best: 0, worst: 0, games: [0, 0], ann: [0, 0], xxiCaught: 0, hats: 0, ultimo: 0 }; }
+function saveStats(st) { try { localStorage.setItem(STATS_KEY, JSON.stringify(st)); } catch (e) {} }
+function recordHand() {
+  if (ui.tut) return;
+  const h = M.hand, r = h.result, st = loadStats();
+  if (!r) return;
+  if (r.kind === 'passedout' || r.kind === 'annulled') { st.thrown++; saveStats(st); return; }
+  st.hands++;
+  const d = r.deltas[0];
+  st.coins += d; st.best = Math.max(st.best, d); st.worst = Math.min(st.worst, d);
+  const role = h.declarer === 0 ? 'declarer' : h.side && h.side[0] === 'D' ? 'partner' : 'defender';
+  const won = r.kind === 'proba' ? h.declarer !== 0 : ((r.ptsD >= 48) === (h.side[0] === 'D'));
+  st.roles[role][0]++; if (won) st.roles[role][1]++;
+  if (role === 'declarer') { st.bids[h.level][0]++; if (won) st.bids[h.level][1]++; }
+  if (r.kind === 'played') {
+    for (const it of Object.values(h.items)) if (it.by === 0 && it.type !== 'game') {
+      const line = r.lines.find(l => l.text.startsWith(E.itemLabel(it)) && /announced by/.test(l.text) && l.text.includes(h.side[0] === 'D' ? 'declarers' : 'defenders'));
+      if (line) { if (/made/.test(line.text)) st.ann[0]++; else st.ann[1]++; }
+    }
+    if (h.hat >= 0 && h.side[h.hat] !== h.side[0]) { const sk = h.play.tricks.find(t => t.cards.some(x => x.c === 'T22' && x.p === 0) && t.cards.some(x => x.c === 'T21')); if (sk) st.xxiCaught++; }
+    if (h.hat === 0) st.hats++;
+    const last = h.play.tricks[8];
+    if (last && last.wcard === 'T1' && last.winner === 0) st.ultimo++;
+  }
+  if (M.over) { st.games[0]++; if (M.over.winners.includes(0)) st.games[1]++; }
+  saveStats(st);
+}
+function statsHTML() {
+  const st = loadStats();
+  const pct = ([n, w]) => (n ? `${w}/${n} (${Math.round(w / n * 100)}%)` : '–');
+  return `<h2>Your stats</h2><p class="hint">Every hand you’ve finished in this browser (tutorial hands aren’t counted).</p>
+  <table class="lines">
+  <tr><td>Hands played</td><td>${st.hands}${st.thrown ? ` <span class="hint">+ ${st.thrown} thrown in</span>` : ''}</td></tr>
+  <tr><td>Games finished / won</td><td>${pct(st.games)}</td></tr>
+  <tr><td>Gold won overall</td><td>${fmt(st.coins)}</td></tr>
+  <tr><td>Best hand / worst hand</td><td>${fmt(st.best)} / ${fmt(st.worst)}</td></tr>
+  <tr><th>Win rate by role</th><th></th></tr>
+  <tr><td>As declarer</td><td>${pct(st.roles.declarer)}</td></tr>
+  <tr><td>As secret partner</td><td>${pct(st.roles.partner)}</td></tr>
+  <tr><td>As defender</td><td>${pct(st.roles.defender)}</td></tr>
+  <tr><th>Your contracts</th><th></th></tr>
+  ${[1, 2, 3, 4].map(l => `<tr><td>${E.BID_NAMES[l]}</td><td>${pct(st.bids[l])}</td></tr>`).join('')}
+  <tr><th>Highlights</th><th></th></tr>
+  <tr><td>Announcements made / failed</td><td>${st.ann[0]} / ${st.ann[1]}</td></tr>
+  <tr><td>XXIs caught with your Skíz</td><td>${st.xxiCaught}</td></tr>
+  <tr><td>Pagát ultimós won</td><td>${st.ultimo}</td></tr>
+  <tr><td>Mayor’s hats worn</td><td>${st.hats}</td></tr></table>
+  <div class="row" style="margin-top:12px"><button class="btn" data-act="scores">Score sheet</button><button class="btn" data-act="resetstats">Reset stats</button></div>`;
+}
+
+// ---------- tutorial ----------
+const LESSONS = [
+  { seed: 3, title: 'Your first game', blurb: 'You win the bidding and lead the game. Mitz explains every step.' },
+  { seed: 9, title: 'The secret partner', blurb: 'Someone else bids and calls the XX, which you hold. Help them without giving yourself away.' },
+  { seed: 18, title: 'Defending', blurb: 'Team up with a partner you can’t see yet to stop the declarer reaching 48 points.' },
+  { seed: null, title: 'Practice with a coach', blurb: 'A random deal against gentle opponents. Ask Simz for a hint whenever you like.' },
+];
+const CAT_SVG = '<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M5 9 L7 2 L11 7 L15 7 L19 2 L21 9 Q24 15 20 20 Q13 25 6 20 Q2 15 5 9Z" fill="#1d1a1f" stroke="#d9ad45" stroke-width="1"/><ellipse cx="9.5" cy="13" rx="1.6" ry="2" fill="#d8e04a"/><ellipse cx="16.5" cy="13" rx="1.6" ry="2" fill="#d8e04a"/><path d="M12 16.5 L14 16.5 L13 17.6Z" fill="#b07a80"/></svg>';
+const helperShown = () => !ui.tut && ui.coach.cur && ((ui.prefs.helper === 'always' && ui.hideKey !== ui.coach.curKey) || ui.hintKey === ui.coach.curKey);
+// Mitz and Simz take turns as coach: by lesson in the tutorial, by hand in normal games
+const coachName = () => (ui.tut ? (ui.tut.lesson % 2 ? 'Simz' : 'Mitz') : (M.handNo % 2 ? 'Mitz' : 'Simz'));
+function catBadge() {
+  const who = coachName(), col = who === 'Mitz' ? '#d9ad45' : '#b3161f';
+  const svg = CAT_SVG.replace('stroke="#d9ad45"', `stroke="${col}"`).replace('</svg>', `<path d="M7.5 21.2 Q13 23.6 18.5 21.2" fill="none" stroke="${col}" stroke-width="2"/></svg>`);
+  return `<div class="cat" title="${who}, your coach (${who === 'Mitz' ? 'gold' : 'red'} collar)" style="box-shadow:0 0 0 2px ${col}">${svg}</div>`;
+}
+const HR = () => { const c = ui.coach.cur; if (!c) return null; if (ui.tut) return ui.tut.showMe ? c.rec : null; return helperShown() ? c.rec : null; };
+const SUITW = { H: 'hearts', D: 'diamonds', C: 'clubs', S: 'spades', T: 'tarokks' };
+const nm = c => (c === 'T22' ? 'Skíz' : c === 'T1' ? 'Pagát (I)' : E.isT(c) ? E.roman(E.tv(c)) : E.cardName(c));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+function startLesson(i) {
+  clearTimeout(ui.timer); finishFxQuiet();
+  if (!ui.tut) ui.mainM = M;
+  const L = LESSONS[i];
+  M = E.newMatch({
+    seed: L.seed != null ? L.seed : (Math.random() * 4294967296) >>> 0,
+    names: ['You', 'Mitz', 'Simz', 'Zsófi'],
+    levels: [null, L.seed != null ? 'intermediate' : 'novice', L.seed != null ? 'intermediate' : 'novice', L.seed != null ? 'intermediate' : 'novice'],
+  });
+  ui.tut = { lesson: i, seen: {}, note: '', showMe: false, cur: null };
+  Object.assign(ui, { bubbles: {}, logSeen: 0, showTrick: null, collecting: false, sel: [], err: '', dealtHand: 0, modal: null });
+  ui.annSel = { declare: 0, bonuses: [], kontras: [] };
+  render(); schedule();
+}
+function exitTutorial() {
+  clearTimeout(ui.timer); finishFxQuiet();
+  if (ui.tut) ui.learned[ui.tut.lesson] = true;
+  M = ui.mainM; ui.mainM = null; ui.tut = null;
+  Object.assign(ui, { bubbles: {}, logSeen: M.hand.log.length, showTrick: null, collecting: false, sel: [], err: '', dealtHand: M.handNo, modal: null });
+  save(); render(); schedule();
+}
+function finishFxQuiet() {
+  if (!ui.fx) return;
+  clearTimeout(ui.fxTimer);
+  $('#fx').getAnimations({ subtree: true }).forEach(a => a.cancel());
+  $('#fx').innerHTML = ''; ui.fx = null;
+}
+
+const INTRO = {
+  bid: `<b>Bidding</b> decides who leads this hand (the <b>declarer</b>). You may only bid if you hold an <b>honour</b>: the Skíz, the XXI or the Pagát (I). The bids are Three, Two, One and Solo: the number is how many of the six face-down talon cards the declarer gets to pick up. Fewer cards is harder, so it’s worth more.`,
+  discard: `You picked up cards from the talon (they have a gold dot). Now put the same number face down. These discards still count at the end: the declarer’s count for the declarer’s side, everyone else’s for the defenders.`,
+  call: `As declarer you now <b>call</b> a tarokk, normally the <b>XX</b>. Whoever holds it is your partner for this hand, but they keep quiet. You’ll find out when they play it.`,
+  announce: `<b>Announcements.</b> Before play, anyone can bet on bonuses (like winning the last trick with the Pagát) or declare 8 or 9 tarokks. An announced bonus scores double, but a failed one costs the same. In a first game, passing is perfectly fine.`,
+  play: `<b>The play.</b> Nine tricks. Whoever is to the dealer’s right leads. You must <b>follow suit</b> if you can. If you can’t, you must play a <b>tarokk</b> (trump). Only with neither can you throw anything. The highest tarokk wins; with no tarokk, the highest card of the suit led. Count points, not tricks: the declarer’s side needs <b>48 of the 94</b> card points.`,
+};
+function roleLine(h) {
+  if (!h.side) return '';
+  if (h.declarer === 0) return h.alone ? 'You are playing <b>alone</b> against all three.' : `You’re the declarer. Your partner is whoever holds the ${E.roman(E.tv(h.called))}.`;
+  if (h.side[0] === 'D') return `You hold the ${E.roman(E.tv(h.called))}, so you are ${esc(N(h.declarer))}’s <b>secret partner</b>. They don’t know yet!`;
+  return `You don’t hold the ${E.roman(E.tv(h.called))}, so you’re a <b>defender</b> against ${esc(N(h.declarer))}. One of the other two players is on your side, but you don’t know which yet.`;
+}
+function handDesc(hand) {
+  const ts = hand.filter(E.isT), hon = hand.filter(E.isHonour).map(nm), kings = hand.filter(E.isKing).length;
+  return `You hold ${plural(ts.length, 'tarokk')}${hon.length ? ' including the ' + hon.join(' and the ') : ''}${kings ? ' and ' + plural(kings, 'king') : ''}.`;
+}
+function winnerSoFar(tr) {
+  const led = E.suitOf(tr[0].c);
+  let w = 0;
+  for (let i = 1; i < tr.length; i++) if (E.beats(tr[i].c, tr[w].c, led)) w = i;
+  return tr[w];
+}
+function explainPlay(h, pd, card) {
+  const hand = h.hands[0], tr = h.play.trick, legal = pd.legal;
+  let cons = '';
+  if (tr.length) {
+    const led = E.suitOf(tr[0].c);
+    if (hand.some(c => E.suitOf(c) === led)) cons = led === 'T' ? 'Tarokks were led and you have some, so you must play one. ' : `${SUITW[led][0].toUpperCase() + SUITW[led].slice(1)} were led and you have some, so you must follow suit. `;
+    else if (hand.some(E.isT)) cons = `You have no ${SUITW[led]}, so you must play a tarokk. `;
+    else cons = `You have no ${SUITW[led]} and no tarokks, so you may play anything. `;
+  }
+  const obs = E.obligations(M.hand, 0);
+  if (legal.length === 1) return cons + `Your only legal card is the <b>${nm(card)}</b>.` + (obs.length ? ' (Your announcement makes you keep certain cards for later.)' : '');
+  const pts = tr.reduce((a, x) => a + E.points(x.c), 0);
+  const keepPag = hand.includes('T1') && card !== 'T1' && hand.filter(E.isT).length > 1 ? ' Keep the Pagát back if you can: winning the last trick with it is a bonus, and losing it there costs 5.' : '';
+  if (!tr.length) {
+    if (E.isKing(card)) return `Lead the <b>${nm(card)}</b>. Kings are worth 5 and usually win early, before anyone has run out of the suit.` + keepPag;
+    if (E.isT(card) && h.side[0] === 'D') return `Lead the <b>${nm(card)}</b>. Leading tarokks pulls the defenders’ tarokks out, so your kings and high cards are safer later.` + keepPag;
+    if (E.isT(card)) return `Lead the <b>${nm(card)}</b>, a modest tarokk that won’t give much away.` + keepPag;
+    return `Lead the <b>${nm(card)}</b>. ` + (E.points(card) <= 2 ? 'It’s cheap, and it makes the others spend cards.' : 'Playing the hand out many ways, this lead came out best: it draws the suit out while your tarokks stay in reserve.') + keepPag;
+  }
+  const cur = winnerSoFar(tr);
+  const rel = AI.relation(M.hand, 0, cur.p);
+  const xxi = tr.find(x => x.c === 'T21');
+  if (card === 'T22' && xxi) return cons + `Play the <b>Skíz</b> to catch ${esc(N(xxi.p))}’s XXI. Catching it is worth 21 to your side!`;
+  const led = E.suitOf(tr[0].c);
+  if (E.beats(card, cur.c, led)) {
+    if (tr.length === 3) return cons + `Win the trick with the <b>${nm(card)}</b>${pts >= 3 ? ` and its ${pts} points` : ''}. You’re last to play, so nobody can beat it.` + keepPag;
+    const low = E.isT(card) && E.tv(card) <= 12;
+    return cons + `Play the <b>${nm(card)}</b>: it beats everything so far${pts >= 3 ? ` (${pts} points in the trick)` : ''}.${low ? ' A low tarokk risks little if someone overtakes it.' : ''}` + keepPag;
+  }
+  if (rel === 'ally' && E.points(card) >= 3) return cons + `${esc(N(cur.p))} is on your side and winning this trick, so add points: play the <b>${nm(card)}</b> (${E.points(card)} points).`;
+  if (rel === 'ally') return cons + `${esc(N(cur.p))} is on your side and winning, so play the <b>${nm(card)}</b>.`;
+  return cons + `You can’t win this trick sensibly, so give away as little as possible: the <b>${nm(card)}</b>.` + keepPag;
+}
+function explain(pd) {
+  const h = M.hand, hand = h.hands[0];
+  let rec;
+  try { rec = AI.recommend(M, ui.tut ? 'seasoned' : pd.type === 'play' ? 'pro' : 'seasoned'); } catch (e) { rec = null; }
+  if (!rec) return { text: '', rec: null };
+  switch (pd.type) {
+    case 'bid': {
+      if (!hand.some(E.isHonour) && !pd.options.some(o => o.type !== 'pass')) return { rec, text: `${handDesc(hand)} With no honour you <b>must pass</b>.` };
+      const o = pd.options.find(x => x.type === rec.type && (x.type === 'pass' || x.level === rec.level)) || {};
+      if (rec.type === 'pass') return { rec, text: o.yielded ? `${handDesc(hand)} Passing here “yields” the game to the Two-bidder and promises them you hold the XX and a high honour, which you do. You’ll be their partner.` : `${handDesc(hand)} That’s not quite enough to lead the game, so <b>pass</b>. You can still win as a partner or defender.` };
+      if (rec.type === 'hold') return { rec, text: `${handDesc(hand)} You spoke before ${esc(N(h.bid.highBidder))}, so you can <b>hold</b> their bid (“Tartom”) and keep it without raising.` };
+      return { rec, text: `${handDesc(hand)} That’s a good hand: <b>bid ${E.BID_NAMES[rec.level]}</b>.` + (o.cue ? ` Jumping a level also tells everyone you hold the ${E.roman(E.tv(o.cue))}.` : rec.level === 1 ? ' Three is the cheapest bid, and you get three talon cards.' : '') };
+    }
+    case 'discard': {
+      const decl = h.declarer === 0;
+      return { rec, text: `Discard the <b>${rec.cards.map(nm).join('</b> and the <b>')}</b>. Throw away low cards, ideally emptying a short suit: then when that suit is led you can win with a tarokk. ${decl ? 'As declarer, any points you discard still count for you.' : 'Your discards count for the defenders, so throw away cards worth little.'} You can’t discard kings, honours or the XX.` };
+    }
+    case 'annul': return { rec, text: `Your cards let you <b>annul</b> the hand: throw it in, and the next four deals count double. ${rec.yes ? 'With a hand this poor, annulling is sensible.' : 'Four kings are worth playing on with.'}` };
+    case 'call': {
+      const has20 = hand.includes('T20');
+      return { rec, text: rec.card === 'T20' && !has20 ? `<b>Call the XX.</b> Whoever holds it becomes your partner without saying so.` : rec.card === 'T20' ? `You hold the XX yourself. Calling it means playing alone against all three. Only do that with a huge hand.` : `You hold the XX yourself, so call the <b>${E.roman(E.tv(rec.card))}</b>, the highest tarokk you don’t have.` };
+    }
+    case 'announce': {
+      const parts = [];
+      if (rec.declare) parts.push(`<b>Declare your ${rec.declare} tarokks</b>: everyone pays you ${rec.declare === 9 ? 2 : 1}. (Undeclared, you could only claim from your partner.)`);
+      for (const k of rec.bonuses || []) {
+        const t = k.split(':')[1];
+        parts.push(t === 'trull' ? '<b>Announce trull</b>: you hold all three honours.' : t === 'ultimo' ? '<b>Announce pagát ultimó</b>: you have enough tarokks to keep the Pagát until the last trick.' : `<b>Announce ${E.BONUS[t].name.toLowerCase()}</b>.`);
+      }
+      for (const k of rec.kontras || []) parts.push(k === 'game' ? '<b>Kontra the game</b>: your hand is strong enough to expect the declarer to lose. It doubles the stakes.' : `<b>Kontra</b> their ${E.itemLabel(h.items[k]).toLowerCase()}: your cards make it unlikely to succeed.`);
+      if (!parts.length) parts.push('Nothing here is worth the risk, so <b>pass</b>.');
+      return { rec, text: (ui.tut && !ui.tut.seen.role ? roleLine(h) + ' ' : '') + parts.join(' ') };
+    }
+    case 'play': return { rec, text: explainPlay(h, pd, rec.card) };
+  }
+  return { rec, text: '' };
+}
+function trickNote(t) {
+  const h = M.hand;
+  const pts = t.cards.reduce((a, x) => a + E.points(x.c), 0);
+  const nT = t.cards.filter(x => E.isT(x.c)).length;
+  const why = E.isT(t.wcard) ? (nT > 1 ? 'the highest tarokk' : 'the only tarokk') : 'the highest card of the suit led';
+  let s = `${t.winner === 0 ? 'You win' : esc(N(t.winner)) + ' wins'} trick ${t.no} with the <b>${nm(t.wcard)}</b>, ${why}. It held ${plural(pts, 'point')}.`;
+  const calledHere = t.cards.find(x => x.c === h.called);
+  if (calledHere && h.partner >= 0) s += ` ${calledHere.p === 0 ? 'You' : esc(N(calledHere.p))} played the called ${E.roman(E.tv(h.called))}, so now everyone knows the partnership.`;
+  return s;
+}
+function endText() {
+  const h = M.hand, r = h.result;
+  if (!r) return '';
+  if (r.kind !== 'played') return 'This hand didn’t get played out. Try the lesson again.';
+  const mine = h.side[0], my = mine === 'D' ? r.ptsD : r.ptsO, need = mine === 'D' ? 48 : 47;
+  const won = my >= need;
+  return `Your side took <b>${my} of 94</b> points (${mine === 'D' ? 'declarers need 48' : 'defenders need 47'}), so you <b>${won ? 'win' : 'lose'}</b> the game. Its value comes from the bid: ${E.BID_NAMES[h.level]} is worth ${h.level}. Bonuses and declarations are added on top. You ${r.deltas[0] >= 0 ? 'collect' : 'pay'} <b>${Math.abs(r.deltas[0])}</b> gold. Open the result to see each line of the scoring.${ui.tut.lesson >= 2 ? ' In normal games you can tap <b>Hint</b> for a suggestion whenever you like. Mitz and Simz take turns, one hand each. Or switch suggestions on for every move in Settings.' : ''}`;
+}
+function updateCoach(pd) {
+  const c = ui.coach, h = M.hand;
+  const key = [M.handNo, h.phase, pd.player, h.play ? h.play.trickNo + ':' + h.play.trick.length : '', h.bid.actions.length, h.exch ? h.exch.queue.length : '', h.ann ? h.ann.round.length : ''].join('|');
+  if (c.curKey !== key) { c.curKey = key; c.cur = null; }
+  const decision = pd.player === 0 && !ui.fx && !ui.showTrick && ['bid', 'discard', 'annul', 'call', 'announce', 'play'].includes(pd.type);
+  if (!decision) return;
+  const needed = ui.tut || (ui.prefs.helper === 'always' && ui.hideKey !== key) || ui.hintKey === key;
+  if (needed && !c.cur) c.cur = explain(pd);
+}
+function renderCoach(pd) {
+  const el = $('#coach');
+  if (!ui.tut) {
+    if (helperShown() && ui.coach.cur.text) {
+      el.classList.add('on');
+      el.innerHTML = `<div class="who">${catBadge()}<div style="flex:1"><b>${coachName()} suggests</b><div>${ui.coach.cur.text}</div><div class="crow"><button class="cbtn" data-act="hidehint">Hide</button>${ui.prefs.helper === 'always' ? '<button class="cbtn" data-act="settings">Helper settings</button>' : ''}</div></div></div>`;
+    } else { el.classList.remove('on'); el.innerHTML = ''; }
+    return;
+  }
+  el.classList.add('on');
+  const t = ui.tut, h = M.hand;
+  let html = '';
+  const phaseKey = { bidding: 'bid', exchange: 'discard', call: 'call', announce: 'announce', play: 'play' }[h.phase];
+  if (pd.type === 'end' || pd.type === 'over') html += `<div>${endText()}</div>`;
+  else if (ui.fx) html += `<div>${esc(N(h.dealer))} shuffles and deals: nine cards each, and six face down in the middle (the <b>talon</b>).</div>`;
+  else {
+    if (t.note) html += `<div class="note">${t.note}</div>`;
+    const showIntro = phaseKey && !t.seen[phaseKey] && (phaseKey !== 'discard' || pd.player === 0) && (phaseKey !== 'call' || h.declarer === 0);
+    if (showIntro) html += `<div class="intro">${INTRO[phaseKey]}</div>`;
+    if (h.phase === 'announce' && !t.seen.role && pd.player !== 0) html += `<div class="intro">${roleLine(h)}</div>`;
+    if (ui.coach.cur && ui.coach.cur.text) html += `<div>${ui.coach.cur.text}</div>`;
+    else if (pd.player > 0 && !t.note && !showIntro) html += `<div>Watch what ${esc(N(pd.player))} does…</div>`;
+  }
+  let btns = '';
+  if (ui.coach.cur && ui.coach.cur.rec) btns += `<button class="cbtn pri" data-act="showme">${t.showMe ? 'Hide hint' : 'Show me'}</button>`;
+  if (pd.type === 'end') btns += `<button class="cbtn pri" data-act="showresult">See the scoring</button>`;
+  btns += `<button class="cbtn" data-act="rulesref">Rules</button><button class="cbtn" data-act="exittut">Exit tutorial</button>`;
+  el.innerHTML = `<div class="who">${catBadge()}<div style="flex:1"><b>Lesson ${t.lesson + 1}: ${esc(LESSONS[t.lesson].title)}</b><div>${html}</div><div class="crow">${btns}</div></div></div>`;
+  if (phaseKey && pd.player === 0 && !ui.fx) t.pendingSeen = phaseKey;
+}
+function learnHTML(welcome) {
+  let s = welcome ? `<h2>Welcome to Tarokk!</h2><p>Hungarian Tarokk is a four-player trick-taking game with trumps, secret partners and plenty of bluff. You play against Mitz, Simz and a third friend.</p><p><b>New to the game?</b> Start with the tutorial: three short guided hands, with Mitz and Simz taking turns to explain every move.</p>`
+    : `<h2>Learn to play</h2><p class="hint">Each lesson is one guided hand. Mitz and Simz take turns as your coach, explaining each step and showing you a good move. Tutorial games never touch your gold.</p>`;
+  s += LESSONS.map((L, i) => `<div class="lesson"><div><b>${i + 1}. ${esc(L.title)}</b>${ui.learned[i] ? ' <span class="tag">done</span>' : ''}<span class="hint">${esc(L.blurb)}</span></div><button class="btn ${i === 0 && !ui.learned[0] ? 'primary' : ''}" data-act="lesson" data-i="${i}">${ui.learned[i] ? 'Replay' : 'Start'}</button></div>`).join('');
+  s += `<div class="row" style="margin-top:12px"><button class="btn" data-act="rulesref">Rules reference</button>${welcome ? '<button class="btn" data-act="playnow">Skip, just play</button>' : ''}</div>`;
+  return s;
+}
+
+function rulesHTML() {
+  const row = cs => `<div class="cardrow">${cs.map(c => cardHTML(c)).join('')}</div>`;
+  const sec = (id, t) => `<h3 id="r-${id}">${t}</h3>`;
+  return `<h2>Rules reference</h2>
+<div class="toc">${[['overview', 'Overview'], ['cards', 'Cards & points'], ['bid', 'Bidding'], ['talon', 'Talon'], ['call', 'Partners'], ['ann', 'Announcements'], ['play', 'Play'], ['score', 'Scoring & gold'], ['words', 'Hungarian words']]
+  .map(([id, t]) => `<button class="chip" data-act="rulesref" data-sec="${id}">${t}</button>`).join('')}</div>
+${sec('overview', 'Overview')}
+<p>Four players, 42 cards, nine tricks a hand. The winner of the bidding, the <b>declarer</b>, calls a tarokk (normally the XX). Whoever holds it is their secret partner. The declarer’s side needs <b>48 of the 94</b> card points to win the game. Bonuses and gold change hands after every deal.</p>
+${sec('cards', 'Cards & points')}
+<p><b>22 tarokks</b> are trumps. Highest to lowest: the Skíz, XXI, XX … II, and the I, called the <b>Pagát</b>. The Skíz, XXI and Pagát are the three <b>honours</b>.</p>
+${row(['T22', 'T21', 'T20', 'T19', 'T2', 'T1'])}
+<p><b>Four suits</b> of five cards: King, Queen, Cavalier, Jack and a pip card (Ace in hearts and diamonds, Ten in clubs and spades), in that order.</p>
+${row(['HK', 'HQ', 'HC', 'HJ', 'HX', 'SX'])}
+<table><tr><th>Card</th><th>Points</th></tr><tr><td>Skíz, XXI, Pagát, Kings</td><td>5</td></tr><tr><td>Queens</td><td>4</td></tr><tr><td>Cavaliers</td><td>3</td></tr><tr><td>Jacks</td><td>2</td></tr><tr><td>Tarokks II–XX, Aces, Tens</td><td>1</td></tr><tr><td><b>Total</b></td><td><b>94</b></td></tr></table>
+${sec('bid', 'Bidding')}
+<ul><li>Nine cards each, six face down in the <b>talon</b>. The player to the dealer’s right speaks first.</li>
+<li>You may only bid if you hold an honour. Bids, low to high: <b>Three</b> (game worth 1), <b>Two</b> (2), <b>One</b> (3), <b>Solo</b> (4). The number is how many talon cards the declarer takes.</li>
+<li>A player who spoke earlier may <b>hold</b> a later bid instead of raising, but not twice in a row. Once you pass, you’re out.</li>
+<li><b>Invitations</b>: the first jump bid of one level promises the XIX, a jump of two the XVIII. The declarer must then call that card.</li>
+<li><b>Yielded game</b>: if Three is overbid by Two and the Three-bidder then passes instead of holding, they promise the XX plus a high honour.</li>
+<li>If the first three pass, the fourth may bid Three without an honour, but loses at once if the talon brings none. If everyone passes, the deal is thrown in.</li></ul>
+${sec('talon', 'Talon & discards')}
+<ul><li>The declarer takes their talon cards first and the rest are shared out in turn. Everyone discards as many as they took.</li>
+<li>Kings, honours and the XX may not be discarded. Tarokks may be, but must be announced, and the declarer’s are shown.</li>
+<li>The declarer’s discards count for the declarer’s side; the others’ count for the defenders.</li>
+<li>With all four kings, no tarokks, or only the XXI and/or Pagát as tarokks, you may annul the deal.</li></ul>
+${sec('call', 'Partners')}
+<ul><li>The declarer calls the XX. If they hold it, they call the highest tarokk they lack, or the XX itself to play alone against three.</li>
+<li>If another player discarded a tarokk, the declarer may call any tarokk from II to XX. If the called card is in someone’s discards, the declarer plays alone.</li>
+<li>The partner stays secret until the called card is played or an announcement gives them away.</li></ul>
+${sec('ann', 'Announcements')}
+<ul><li>Starting with the declarer, players may declare 8 or 9 tarokks, announce bonuses, and kontra. It ends after three passes in a row.</li>
+<li>An announcement puts you on the side of the last player who announced. If you’re on the other side, kontra something first.</li>
+<li>Kontra doubles an item of the other side. They may answer with rekontra (×4), then szubkontra, hirskontra and mordkontra.</li></ul>
+<table><tr><th>Bonus</th><th>Silent</th><th>Announced</th></tr>
+<tr><td><b>Trull</b>: win the Skíz, XXI and Pagát</td><td>1</td><td>2</td></tr>
+<tr><td><b>Four kings</b>: win all four kings</td><td>1</td><td>2</td></tr>
+<tr><td><b>Pagát ultimó</b>: win the last trick with the Pagát</td><td>5</td><td>10</td></tr>
+<tr><td><b>XXI catch</b>: capture an opponent’s XXI with the Skíz</td><td>21</td><td>42</td></tr>
+<tr><td><b>Double game</b>: 71+ card points</td><td>2× game</td><td>4× game</td></tr>
+<tr><td><b>Volát</b>: all nine tricks</td><td>3× game</td><td>6× game</td></tr>
+<tr><td><b>8 / 9 tarokks</b> declared</td><td colspan="2">1 / 2 from each player</td></tr></table>
+<ul><li>A failed announcement costs what it would have won. Losing the Pagát in the last trick costs 5.</li>
+<li>Once pagát ultimó is announced, the Pagát must be kept until you’re forced to play it.</li>
+<li>Illustrated bonuses (Settings): <b>centrum</b> (first five tricks, the fifth with the XX, 10), <b>small bird</b> (first six, the sixth with the XXI, 10), <b>large bird</b> (first seven, the seventh with the Skíz, 10), <b>pagát uhu</b> (8th trick with the Pagát, 20), <b>king ultimó</b> (last trick with a named king, 15), <b>king uhu</b> (8th trick with a named king, 20).</li></ul>
+${sec('play', 'Play')}
+<ul><li>The player to the dealer’s right leads the first trick; the winner of each trick leads the next.</li>
+<li>Follow suit if you can. If you can’t, you must play a tarokk. Only with neither may you play anything.</li>
+<li>The highest tarokk wins the trick; with no tarokk, the highest card of the suit led.</li>
+<li>Tap your trick pile to look back at your won tricks (switchable in Settings).</li></ul>
+${sec('score', 'Scoring & gold')}
+<ul><li>Everyone starts with 100 gold. Each point is one coin. Every player on the losing side pays one player on the winning side. A lone declarer collects from, or pays, all three.</li>
+<li>Game value: Three 1, Two 2, One 3, Solo 4. Silent double game counts 2×, silent volát 3×.</li>
+<li>Undeclared 8 or 9 tarokks can be claimed only from your partner.</li>
+<li>A thrown-in or annulled deal makes the next four deals double. So does a caught XXI (house rule, in Settings). Overlapping doublings multiply.</li>
+<li>The game ends when someone runs out of gold. The richest player wins.</li></ul>
+${sec('words', 'Hungarian words')}
+<table><tr><td>Passz</td><td style="text-align:left">Pass</td></tr><tr><td>Tartom</td><td style="text-align:left">I hold</td></tr><tr><td>Három · Kettő · Egy · Szóló</td><td style="text-align:left">Three · Two · One · Solo</td></tr>
+<tr><td>Skíz</td><td style="text-align:left">The highest tarokk</td></tr><tr><td>Pagát</td><td style="text-align:left">The I, lowest tarokk</td></tr><tr><td>Tulétroá</td><td style="text-align:left">Trull</td></tr>
+<tr><td>Négykirály</td><td style="text-align:left">Four kings</td></tr><tr><td>Pagátulti</td><td style="text-align:left">Pagát ultimó</td></tr><tr><td>Huszonegyfogás</td><td style="text-align:left">XXI catch</td></tr>
+<tr><td>Duplajáték</td><td style="text-align:left">Double game</td></tr><tr><td>Skart</td><td style="text-align:left">Discards</td></tr></table>
+<p class="hint">Based on the standard Paskievics rules as described on pagat.com, plus the house rules noted.</p>`;
+}
+
+// ---------- boot ----------
+M = load();
+if (!M && !Object.keys(ui.learned).length) ui.modal = 'welcome';
+if (M) { ui.dealtHand = M.handNo; if (ui.prefs.levels) M.levels = M.levels || ui.prefs.levels.slice(); }
+else M = E.newMatch({ illustrated: ui.prefs.illustrated, levels: ui.prefs.levels.slice(), xxiDouble: ui.prefs.xxiDouble, startCoins: ui.prefs.coins });
+ui.logSeen = M.hand.log.length;
+if (M.hand.result) ui.recorded = M.seed + ':' + M.handNo;
+render();
+schedule();
+window.__tarokk = { get M() { return M; }, ui, E, AI, render, human };
+</script>
+</body>
+</html>
