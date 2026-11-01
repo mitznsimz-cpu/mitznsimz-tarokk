@@ -16,9 +16,9 @@
 html,body{margin:0;height:100%;background:var(--felt2);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 body{overflow:hidden}
 button{font:inherit;color:inherit}
-#app{position:relative;display:flex;flex-direction:column;height:100dvh;max-width:1100px;margin:0 auto;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#app{position:relative;display:flex;flex-direction:column;height:100dvh;max-width:1500px;margin:0 auto;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:linear-gradient(#2a0609,#1c0406);border-bottom:1px solid var(--gold-dim)}
-.logo{font-family:Georgia,"Times New Roman",serif;font-size:20px;color:var(--gold2);letter-spacing:.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{cursor:pointer;font-family:Georgia,"Times New Roman",serif;font-size:20px;color:var(--gold2);letter-spacing:.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logo small{display:block;font-family:system-ui,sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
 .hbtn{background:transparent;border:1px solid var(--gold-dim);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--gold2);cursor:pointer;min-height:34px}
 .hbtn:focus-visible,.btn:focus-visible,.card:focus-visible,.chip:focus-visible,.pile:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
@@ -59,7 +59,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 .bubble.b3{left:114px;top:23%;max-width:150px}
 .bubble.b0{left:12px;bottom:66px;max-width:220px}
 #trick{position:absolute;left:50%;top:55%;width:0;height:0;z-index:4}
-#trick .card{position:absolute;left:0;top:0}
+#trick .card{position:absolute;left:0;top:0;--cw:var(--tw,66px);--ch:calc(var(--tw,66px) * 1.545)}
 #trick .tc0{translate:-50% 2%}
 #trick .tc1{translate:36% -56%}
 #trick .tc2{translate:-50% -114%}
@@ -80,7 +80,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 .skart .card{--cw:30px;--ch:46px}
 .skart .card .band,.skart .card .bg b{display:none}
 /* panel */
-#panel{flex:none;background:linear-gradient(#2b080c,#1d0507);border-top:1px solid var(--gold-dim);padding:8px 10px;min-height:60px}
+#panel{position:relative;flex:none;background:linear-gradient(#2b080c,#1d0507);border-top:1px solid var(--gold-dim);padding:8px 10px;min-height:60px}
 .ptitle{font-size:14px;font-weight:700;color:var(--gold2);margin-bottom:6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ptitle span{font-weight:400;font-size:12px;color:var(--muted)}
 .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -90,6 +90,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 .btn.primary small{color:#5a3a10}
 .btn:disabled{opacity:.4;cursor:default}
 .err{color:var(--bad);font-size:12px;margin-top:6px}
+.hintchip{position:absolute;right:10px;top:6px;min-height:32px;padding:5px 10px}
 .hint{color:var(--muted);font-size:12px}
 .grp{margin-bottom:6px}
 .grp h4{margin:0 0 4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -156,6 +157,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 #coach .cbtn.pri{background:#8e141c;color:#fff}
 .btn.hint,.chip.hint{box-shadow:0 0 0 3px #7fe08a,0 0 14px #7fe08a}
 #hand .card.hintc{box-shadow:0 0 0 3px #7fe08a,0 0 14px #7fe08a;transform:translateY(-10px)}
+#hand .card.hintc,#hand .card.sel{z-index:60 !important}
 .lesson{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #fff1}
 .lesson b{color:var(--gold2)} .lesson .hint{display:block}
 .toc{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
@@ -168,6 +170,15 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 .rp .cardrow .card + .card{margin-left:-5px}
 .rp .trk .no{width:54px}
 .cardrow .card.hintc{box-shadow:0 0 0 3px #7fe08a,0 0 10px #7fe08a}
+.about-hero{display:flex;gap:12px;align-items:center;margin:4px 0 10px}
+.about-hero .card{--cw:56px;--ch:87px;flex:none}
+.links{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.links a{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--gold-dim);border-radius:10px;color:var(--cream);text-decoration:none;background:#0004}
+.links a b{color:var(--gold2)} .links a span{font-size:12px;color:var(--muted);display:block}
+.links a.kofi{background:linear-gradient(var(--gold2),var(--gold));color:#2a0609;border-color:var(--gold2)}
+.links a.kofi b{color:#5c0b10} .links a.kofi span{color:#5a3a10}
+.sheet a{color:var(--gold2)}
+.kofi-line{margin-top:10px;font-size:13px;color:var(--muted)}
 /* effects layer */
 #fx{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
 #fx .card{position:absolute;left:0;top:0}
@@ -209,7 +220,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 <body>
 <div id="app">
   <header>
-    <div class="logo">Tarokk<small>Mitz &amp; Simz</small></div>
+    <div class="logo" data-act="about" role="button" tabindex="0" title="About this game">Tarokk<small>Mitz &amp; Simz</small></div>
     <button class="hbtn" data-act="scores">Scores</button>
     <button class="hbtn" data-act="log">Log</button>
     <button class="hbtn" data-act="learn">Learn</button>
@@ -325,6 +336,7 @@ function pileHTML(h, p) {
 
 // ---------- rendering ----------
 function render() {
+  sizeCards();
   V = E.viewFor(M, 0);
   const h = V.hand;
   const pd = E.pending(M);
@@ -359,7 +371,23 @@ function render() {
   postRender();
   if (ui.modal !== ui.modalShown) renderModal();
 }
+// Card sizes follow the screen: the hand scales with width and height; the trick fills the felt.
+function sizeCards() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const cw = Math.round(Math.max(60, Math.min(vw * 0.2, vh * 0.13, 150))); // the hand gets priority over the table
+  const root = document.documentElement.style;
+  if (root.getPropertyValue('--cw') !== cw + 'px') { root.setProperty('--cw', cw + 'px'); root.setProperty('--ch', Math.round(cw * 1.545) + 'px'); }
+}
+function sizeTrick() {
+  const tb = $('#table'), t = document.getElementById('trick');
+  if (!tb || !t) return;
+  const cw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 66;
+  const H = tb.clientHeight, W = tb.clientWidth;
+  const fit = Math.min(0.62 * H / (2.16 * 1.545), (W - 190) / 2.72); // keep clear of the side seats
+  t.style.setProperty('--tw', Math.round(Math.max(cw * 0.85, Math.min(fit, cw * 1.6))) + 'px');
+}
 function postRender() {
+  sizeTrick();
   // card flying into the trick
   const el = document.querySelector('#trick [data-enter]');
   if (el && ui.anim && !reduceMotion) {
@@ -467,7 +495,7 @@ function renderPanel(pd, h) {
     }
   }
   if (!ui.tut && ui.prefs.helper === 'ask' && ui.hintKey !== ui.coach.curKey && ['bid', 'discard', 'annul', 'call', 'announce', 'play'].includes(pd.type))
-    html += `<div class="row" style="margin-top:6px"><button class="chip" data-act="hint">💡 Hint from ${coachName()}</button></div>`;
+    html = html.replace('<div class="ptitle">', '<div class="ptitle" style="padding-right:150px">') + `<button class="chip hintchip" data-act="hint">💡 Hint from ${coachName()}</button>`;
   if (ui.err) html += `<div class="err">${esc(ui.err)}</div>`;
   el.innerHTML = html;
 }
@@ -553,6 +581,7 @@ function renderModal() {
   else if (m === 'over') body = overHTML();
   else if (m === 'learn' || m === 'welcome') body = learnHTML(m === 'welcome');
   else if (m === 'replay') body = replayHTML();
+  else if (m === 'about') body = aboutHTML();
   else if (m === 'stats') body = statsHTML();
   else if (m === 'scores') body = scoresHTML();
   else if (m === 'log') body = `<h2>Hand log</h2>` + h.log.map(l => `<div class="logl ${l.kind}">${esc(l.text)}</div>`).join('');
@@ -643,6 +672,7 @@ function overHTML() {
   s += `<p>${esc(o.broke.map(N).join(' and '))} ran out of gold after ${o.handNo} hand${o.handNo > 1 ? 's' : ''}.</p>`;
   s += '<table><tr><th>Player</th><th>Coins</th></tr>' + order.map((p, i) => `<tr><td>${i + 1}. ${esc(N(p))}${p ? ` <span class="hint">${LEVEL_NAMES[M.levels[p]]}</span>` : ''}</td><td><b class="${M.scores[p] <= 0 ? 'neg' : ''}">${M.scores[p]}</b></td></tr>`).join('') + '</table>';
   s += `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="newmatch">New game</button><button class="btn" data-act="scores">Score sheet</button></div>`;
+  s += `<div class="kofi-line">Enjoyed the game? <a href="${LINKS.kofi}" target="_blank" rel="noopener">☕ Buy Mitz &amp; Simz a coffee on Ko-fi</a></div>`;
   return s;
 }
 function scoresHTML() {
@@ -660,7 +690,7 @@ function settingsHTML() {
   const p = ui.prefs;
   const lv = [1, 2, 3].map(seat => `<div class="set"><div>${esc(N(seat))}</div><div class="row">${AI.LEVELS.map(k =>
     `<button class="chip" data-act="level" data-seat="${seat}" data-v="${k}" aria-pressed="${M.levels[seat] === k}">${LEVEL_NAMES[k]}</button>`).join('')}</div></div>`).join('');
-  return `<h2>Settings</h2>
+  return `<h2>Settings</h2><div class="row" style="margin-bottom:6px"><button class="btn" data-act="about">About this game</button></div>
   <h3>AI players</h3>${lv}
   <p class="hint">Novice plays loosely and forgets announcements. Intermediate plays sound rules of thumb. Seasoned also counts cards and tracks who is out of which suit. Pro tries each card against dozens of guesses at the hidden hands and keeps the best. Changes apply straight away.</p>
   <h3>Helper</h3>
@@ -846,6 +876,12 @@ function human(a, fromRect) {
 }
 
 // ---------- events ----------
+function closeModal() {
+  // the game waits while the first-visit welcome (or About opened from it) is showing
+  const resume = ui.modal === 'welcome' || (ui.modal === 'about' && ui.aboutBack === 'welcome');
+  ui.modal = null; ui.aboutBack = null; renderModal();
+  if (resume) schedule();
+}
 document.addEventListener('click', ev => {
   actx(); // browsers only allow sound after a tap
   const t = ev.target.closest('[data-act]');
@@ -886,6 +922,8 @@ document.addEventListener('click', ev => {
     case 'replaylast': ui.replay = { hand: M.lastHand, step: 0, back: 'scores' }; ui.modal = 'replay'; renderModal(); return;
     case 'rp': ui.replay.step = Math.max(0, Math.min(replaySteps(ui.replay.hand) - 1, ui.replay.step + +t.dataset.d)); renderModal(); $('.sheet').scrollTop = 0; return;
     case 'stats': ui.modal = 'stats'; renderModal(); return;
+    case 'backwelcome': ui.modal = 'welcome'; renderModal(); return;
+    case 'about': { const w = ui.modal === 'welcome'; ui.modal = 'about'; ui.aboutBack = w ? 'welcome' : null; render(); renderModal(); return; }
     case 'resetstats': saveStats(newStats()); renderModal(); return;
     case 'togglesound': ui.prefs.sound = !ui.prefs.sound; save(); renderModal(); if (ui.prefs.sound) sfx('bid'); return;
     case 'showover': ui.modal = 'over'; render(); return;
@@ -906,8 +944,8 @@ document.addEventListener('click', ev => {
       ui.modal = act; render(); renderModal();
       if (act === 'rules' && t.dataset.sec) { const s = document.getElementById('r-' + t.dataset.sec); if (s) s.scrollIntoView(); }
       return;
-    case 'close': { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); return; }
-    case 'closebg': if (ev.target === t) { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); } return;
+    case 'close': closeModal(); return;
+    case 'closebg': if (ev.target === t) closeModal(); return;
     case 'toggleill': ui.prefs.illustrated = !ui.prefs.illustrated; M.illustrated = ui.prefs.illustrated; save(); renderModal(); return;
     case 'togglereview': ui.prefs.review = !ui.prefs.review; save(); renderModal(); return;
     case 'level': M.levels[+t.dataset.seat] = t.dataset.v; ui.prefs.levels = M.levels.slice(); save(); render(); renderModal(); return;
@@ -923,8 +961,8 @@ document.addEventListener('click', ev => {
   }
 });
 document.addEventListener('keydown', ev => {
-  if (ev.key === 'Escape' && ui.modal) { const w = ui.modal === 'welcome'; ui.modal = null; renderModal(); if (w) schedule(); }
-  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#hand .card[data-act]')) { ev.preventDefault(); ev.target.click(); }
+  if (ev.key === 'Escape' && ui.modal) closeModal();
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#hand .card[data-act], .logo')) { ev.preventDefault(); ev.target.click(); }
 });
 let rsz; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (!ui.fx) render(); }, 120); });
 
@@ -1073,11 +1111,43 @@ function statsHTML() {
   <div class="row" style="margin-top:12px"><button class="btn" data-act="scores">Score sheet</button><button class="btn" data-act="resetstats">Reset stats</button></div>`;
 }
 
+// ---------- about ----------
+const VERSION = '1.0';
+const LINKS = {
+  kofi: 'https://ko-fi.com/mitznsimz',
+  shop: 'https://mitznsimz.co.uk',
+  tracker: 'https://mitznsimz-cpu.github.io/DnD-Encounter-Tracker/',
+  repo: 'https://github.com/mitznsimz-cpu/mitznsimz-tarokk',
+  pagat: 'https://www.pagat.com/tarot/xx-hivas.html',
+  email: 'mitznsimz@gmail.com',
+};
+function aboutHTML() {
+  const a = (href, title, sub, cls) => `<a class="${cls || ''}" href="${href}" target="_blank" rel="noopener"><div><b>${title}</b><span>${sub}</span></div></a>`;
+  return `<h2>About Mitz &amp; Simz Tarokk</h2>
+  <div class="about-hero">${cardHTML(null)}${cardHTML('T21')}<div><p style="margin:0">Hungarian Tarokk (Paskievics) for your browser, with three AI friends, a tutorial and an illustrated deck starring Mitz and Simz, our two black cats.</p><p class="hint" style="margin:4px 0 0">Version ${VERSION}</p></div></div>
+  <h3>Made by</h3>
+  <p><b>Pete</b> at <b>MitzNSimz</b>, Folkestone. We make miniatures and free tools for Dungeon Masters.<br>
+  Questions, bugs or rule corrections: <b>${LINKS.email}</b> (<a href="mailto:${LINKS.email}?subject=Mitz%20%26%20Simz%20Tarokk">email</a>)</p>
+  <div class="links">
+    ${a(LINKS.kofi, '☕ Support on Ko-fi', 'If the game brings you joy, a coffee keeps the cats in treats.', 'kofi')}
+    ${a(LINKS.shop, '🛡 MitzNSimz.co.uk', 'Thousands of 3D-printed miniatures for your tabletop games.')}
+    ${a(LINKS.tracker, '⚔ D&amp;D Encounter Tracker', 'Our free combat tracker for D&amp;D 5e.')}
+    ${a(LINKS.repo, '⌘ Source code on GitHub', 'The whole game is one open HTML file.')}
+  </div>
+  <h3>Credits</h3>
+  <ul><li>Rules based on John McLeod’s <a href="${LINKS.pagat}" target="_blank" rel="noopener">Hungarian Tarokk pages at pagat.com</a>.</li>
+  <li>Card art: an original Mitz &amp; Simz deck, inspired by the 19th-century “Industrie und Glück” tarock pattern.</li></ul>
+  <h3>Privacy</h3>
+  <p>No ads, no accounts, no tracking. Your games, coins and stats are stored only in this browser.</p>
+  <p class="hint">Code: MIT licence. Card art and the Mitz &amp; Simz characters © MitzNSimz.</p>
+  ${ui.aboutBack === 'welcome' ? '<div class="row"><button class="btn primary" data-act="backwelcome">Back</button></div>' : ''}`;
+}
+
 // ---------- tutorial ----------
 const LESSONS = [
   { seed: 3, title: 'Your first game', blurb: 'You win the bidding and lead the game. Mitz explains every step.' },
   { seed: 9, title: 'The secret partner', blurb: 'Someone else bids and calls the XX, which you hold. Help them without giving yourself away.' },
-  { seed: 18, title: 'Defending', blurb: 'Team up with a partner you can’t see yet to stop the declarer reaching 48 points.' },
+  { seed: 196, title: 'Defending', blurb: 'Team up with a partner you can’t see yet to stop the declarer reaching 48 points.' },
   { seed: null, title: 'Practice with a coach', blurb: 'A random deal against gentle opponents. Ask Simz for a hint whenever you like.' },
 ];
 const CAT_SVG = '<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M5 9 L7 2 L11 7 L15 7 L19 2 L21 9 Q24 15 20 20 Q13 25 6 20 Q2 15 5 9Z" fill="#1d1a1f" stroke="#d9ad45" stroke-width="1"/><ellipse cx="9.5" cy="13" rx="1.6" ry="2" fill="#d8e04a"/><ellipse cx="16.5" cy="13" rx="1.6" ry="2" fill="#d8e04a"/><path d="M12 16.5 L14 16.5 L13 17.6Z" fill="#b07a80"/></svg>';
@@ -1276,7 +1346,8 @@ function learnHTML(welcome) {
   let s = welcome ? `<h2>Welcome to Tarokk!</h2><p>Hungarian Tarokk is a four-player trick-taking game with trumps, secret partners and plenty of bluff. You play against Mitz, Simz and a third friend.</p><p><b>New to the game?</b> Start with the tutorial: three short guided hands, with Mitz and Simz taking turns to explain every move.</p>`
     : `<h2>Learn to play</h2><p class="hint">Each lesson is one guided hand. Mitz and Simz take turns as your coach, explaining each step and showing you a good move. Tutorial games never touch your gold.</p>`;
   s += LESSONS.map((L, i) => `<div class="lesson"><div><b>${i + 1}. ${esc(L.title)}</b>${ui.learned[i] ? ' <span class="tag">done</span>' : ''}<span class="hint">${esc(L.blurb)}</span></div><button class="btn ${i === 0 && !ui.learned[0] ? 'primary' : ''}" data-act="lesson" data-i="${i}">${ui.learned[i] ? 'Replay' : 'Start'}</button></div>`).join('');
-  s += `<div class="row" style="margin-top:12px"><button class="btn" data-act="rulesref">Rules reference</button>${welcome ? '<button class="btn" data-act="playnow">Skip, just play</button>' : ''}</div>`;
+  s += `<div class="row" style="margin-top:12px"><button class="btn" data-act="rulesref">Rules reference</button>${welcome ? '<button class="btn" data-act="playnow">Skip, just play</button>' : ''}<button class="btn" data-act="about">About</button></div>`;
+  if (welcome) s += `<div class="kofi-line">Free, no ads, no tracking. Made by Pete at <a href="${LINKS.shop}" target="_blank" rel="noopener">MitzNSimz</a>. Enjoying it? <a href="${LINKS.kofi}" target="_blank" rel="noopener">☕ Support on Ko-fi</a></div>`;
   return s;
 }
 

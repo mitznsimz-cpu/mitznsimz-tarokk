@@ -17,7 +17,7 @@ Run `node test.js && node build.js` after any change.
 ## v2 additions
 - Gold: everyone starts with 100 coins (50/200 in Settings) and the game ends when someone hits 0. Undeclared 8/9 tarokks are claimed from partners only. A caught XXI makes the next four deals double (house rule, switchable).
 - Zsófi or Zsolt is picked at random as the fourth player in each new game.
-- Tutorial (Learn → lessons 1–4): fixed deals (seeds 3, 9 and 18, found with `node seeds.js declarer|partner|opponent`) where following Mitz's advice wins. There's also a practice hand. Coach advice comes from `AI.recommend()`, which runs on a copy of the game, so the live deal isn't affected.
+- Tutorial (Learn → lessons 1–4): fixed deals (seeds 3, 9 and 196, found with `node seeds.js declarer|partner|opponent`) where following Mitz's advice wins. There's also a practice hand. Coach advice comes from `AI.recommend()`, which runs on a copy of the game, so the live deal isn't affected.
 - Helper: in normal games Mitz suggests moves on request or on every move (Settings). Card plays use the Pro search; everything else uses Seasoned.
 - Card art: the full Mitz & Simz deck (42 faces + back) is in `art/*.svg`, about 750 KB, and build.js inlines it as `window.MS_ART`. Tarokks are two genre scenes each, honours get one tall scene, and the courts are double-ended. Hearts are the Mitz & Simz court, diamonds a ginger court, clubs a tabby court and spades a grey court. `art/SPEC.md` is the style brief. Settings → Card art switches back to plain faces.
 - Coach: Mitz and Simz take turns, by lesson in the tutorial and by hand in normal games.
