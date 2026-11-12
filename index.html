@@ -71,9 +71,9 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 #trick .card.enter{animation:enter .34s cubic-bezier(.2,.7,.3,1)}
 @keyframes enter{from{transform:translate(var(--fx),var(--fy)) scale(.85) rotate(-8deg)}to{transform:none}}
 #trick.collect .card{transform:translate(var(--tx),var(--ty)) scale(.25);opacity:0;transition:transform .42s ease-in,opacity .3s ease-in .12s}
-.talon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;font-size:11px;color:var(--muted)}
-.talon .fan{position:relative;width:calc(var(--cw) * .7 + 25px);height:calc(var(--ch) * .7);margin:0 auto 3px}
-.talon .card{position:absolute;top:0;--cw:43px;--ch:67px}
+.talon{position:absolute;left:50%;top:var(--taly,50%);transform:translate(-50%,-50%);z-index:2;text-align:center;font-size:11px;line-height:14px;color:var(--muted)}
+.talon .fan{position:relative;width:calc(var(--talw,66px) * 1.35);height:calc(var(--talw,66px) * 1.545);margin:0 auto 3px}
+.talon .card{position:absolute;top:0;--cw:var(--talw,66px);--ch:calc(var(--talw,66px) * 1.545)}
 #info{position:absolute;left:14px;top:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:calc(50% - 76px);pointer-events:none}
 .contract{font-size:11.5px;background:#0007;border:1px solid var(--gold-dim);padding:3px 10px;border-radius:12px;color:var(--gold2);text-align:center}
 .items{display:flex;flex-wrap:wrap;gap:3px}
@@ -1738,6 +1738,9 @@ function pileHTML(h, p) {
 
 // ---------- rendering ----------
 function render() {
+  // remember where the talon is on screen, so it can fly out from exactly there after the bidding
+  const tc = document.querySelectorAll('#talon .card');
+  if (tc.length) ui.talonRects = [...tc].map(e => e.getBoundingClientRect());
   sizeCards();
   V = E.viewFor(M, 0);
   const h = V.hand;
@@ -1753,7 +1756,7 @@ function render() {
   }
   if (!dealing) for (const [p, txt] of Object.entries(ui.bubbles)) if (txt) html += `<div class="bubble b${p}">${esc(txt)}</div>`;
   if (h.phase === 'bidding' && !dealing) {
-    html += `<div class="talon" id="talon"><div class="fan">${h.talon.map((c, i) => cardHTML(null, '', `style="left:${i * 5}px"`)).join('')}</div>Talon</div>`;
+    html += `<div class="talon" id="talon"><div class="fan">${h.talon.map((c, i) => cardHTML(null, '', `style="left:calc(var(--talw,66px) * ${(i * TALON_STEP).toFixed(2)})"`)).join('')}</div>Talon</div>`;
   }
   const tr = ui.showTrick ? ui.showTrick.cards : (h.play ? h.play.trick : []);
   html += `<div id="trick" class="${ui.collecting ? 'collect' : ''}">${tr.map(x => cardHTML(x.c, 'tc' + x.p, ui.anim && ui.anim.card === x.c ? 'data-enter="1"' : '')).join('')}</div>`;
@@ -1780,13 +1783,31 @@ function sizeCards() {
   const root = document.documentElement.style;
   if (root.getPropertyValue('--cw') !== cw + 'px') { root.setProperty('--cw', cw + 'px'); root.setProperty('--ch', Math.round(cw * 1.545) + 'px'); }
 }
+// Sizes for the felt, set on #table: --tw for the trick cards, and --talw/--taly for the talon,
+// which matches the trick cards unless that would run it into the seat at the top of the table.
+const TALON_STEP = 0.07, TALON_LABEL = 17; // fan step (in card widths); label height under the fan
 function sizeTrick() {
-  const tb = $('#table'), t = document.getElementById('trick');
-  if (!tb || !t) return;
-  const cw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 66;
+  const tb = $('#table');
+  if (!tb) return;
+  const cw = rootCW();
   const H = tb.clientHeight, W = tb.clientWidth;
   const fit = Math.min(0.62 * H / (2.16 * 1.545), (W - 190) / 2.72); // keep clear of the side seats
-  t.style.setProperty('--tw', Math.round(Math.max(cw * 0.85, Math.min(fit, cw * 1.6))) + 'px');
+  const tw = Math.round(Math.max(cw * 0.85, Math.min(fit, cw * 1.6)));
+  const s2 = tb.querySelector('.seat.s2');
+  const top = s2 ? s2.offsetTop + s2.offsetHeight + 4 : 4, bottom = H - 4;
+  const talw = Math.max(34, Math.min(tw, Math.floor((bottom - top - TALON_LABEL) / 1.545)));
+  const half = (talw * 1.545 + TALON_LABEL) / 2;
+  const taly = Math.round(Math.min(Math.max(H / 2, top + half), bottom - half));
+  for (const [k, v] of [['--tw', tw], ['--talw', talw], ['--taly', taly]])
+    if (tb.style.getPropertyValue(k) !== v + 'px') tb.style.setProperty(k, v + 'px');
+}
+function rootCW() { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 66; }
+// where talon card i sits on screen (its centre) and how wide it is
+function talonSpot(i) {
+  const tb = $('#table'), r = tb.getBoundingClientRect(), cs = getComputedStyle(tb);
+  const w = parseFloat(cs.getPropertyValue('--talw')) || rootCW();
+  const y = parseFloat(cs.getPropertyValue('--taly')) || r.height / 2;
+  return { x: r.left + r.width / 2 + (i - 2.5) * TALON_STEP * w, y: r.top + y - TALON_LABEL / 2, w };
 }
 function postRender() {
   sizeTrick();
@@ -2125,12 +2146,34 @@ function fxCard(x, y, face) {
 function finishFx() {
   if (!ui.fx) return;
   if (ui.fxTimer) clearTimeout(ui.fxTimer);
+  const kind = ui.fx;
+  // where the dealt talon cards came to rest (the table can change size once the bidding panel appears)
+  const landed = kind === 'deal' ? [...$('#fx').querySelectorAll('[data-talon]')].map(el => {
+    const a = el.getAnimations()[0];
+    return a && a.playState === 'finished' ? el.getBoundingClientRect() : null;
+  }) : [];
   $('#fx').getAnimations({ subtree: true }).forEach(a => a.cancel());
   $('#fx').innerHTML = '';
-  const kind = ui.fx;
   ui.fx = null;
   if (kind === 'deal') { ui.dealtHand = M.handNo; ui.intro = !reduceMotion; }
-  render(); schedule();
+  render();
+  if (landed.some(Boolean)) settleTalon(landed);
+  schedule();
+}
+// glide each talon card from where the deal left it to its place in the fan
+function settleTalon(from) {
+  const ms = 260 * (SPEEDS[ui.prefs.speed] || 1);
+  document.querySelectorAll('#talon .card').forEach((el, i) => {
+    const o = from[i];
+    if (!o) return;
+    const n = el.getBoundingClientRect();
+    const dx = o.left - n.left, dy = o.top - n.top, sx = o.width / n.width, sy = o.height / n.height;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01) return;
+    el.animate([
+      { transformOrigin: '0 0', transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})` },
+      { transformOrigin: '0 0', transform: 'none' },
+    ], { duration: ms, easing: 'ease-out' });
+  });
 }
 function runDeal() {
   ui.fx = 'deal';
@@ -2161,13 +2204,19 @@ function runDeal() {
   const d = M.hand.dealer;
   for (const pk of [5, 4]) for (let i = 1; i <= 4; i++) for (let j = 0; j < pk; j++) seq.push((d + i) % 4);
   const step = 40 * sp, fly = 300 * sp;
+  const cw = rootCW();
   seq.forEach((p, i) => {
     const t = target(p);
     const el = fxCard(c.x, c.y);
     el.style.opacity = '0';
+    if (p === 'talon') el.dataset.talon = i;
+    // talon cards land exactly where (and as big as) the talon is drawn once the deal ends
+    const end = p === 'talon'
+      ? (s => `translate(${s.x - c.x}px,${s.y - c.y}px) scale(${(s.w / cw).toFixed(3)})`)(talonSpot(i))
+      : `translate(${t.x - c.x}px,${t.y - c.y}px) rotate(200deg) scale(.55)`;
     const a = el.animate([
       { opacity: 1, transform: 'translate(0,0) rotate(0deg)' },
-      { opacity: p === 'talon' ? 1 : 0.9, transform: `translate(${t.x - c.x + (p === 'talon' ? (i - 3) * 4 : 0)}px,${t.y - c.y}px) rotate(${p === 'talon' ? 0 : 200}deg) scale(${p === 'talon' ? 0.7 : 0.55})` },
+      { opacity: p === 'talon' ? 1 : 0.9, transform: end },
     ], { duration: fly, delay: startDeal + i * step, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards' });
     a.onfinish = () => { sfx('deal'); if (p !== 'talon') el.remove(); };
   });
@@ -2175,24 +2224,27 @@ function runDeal() {
   ui.fxTimer = setTimeout(finishFx, startDeal + seq.length * step + fly + 80);
 }
 function runTalon(got) {
-  // talon cards fly from the centre to whoever receives them
+  // talon cards fly from where the talon was drawn to whoever receives them
+  const seen = ui.talonRects; ui.talonRects = null;
   ui.fx = 'talon';
   render();
   if (reduceMotion) { finishFx(); return; }
-  const tr = $('#table').getBoundingClientRect();
-  const c = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
   const sp = SPEEDS[ui.prefs.speed] || 1;
   let i = 0;
   const decl = M.hand.declarer;
+  const cw = rootCW();
   for (let k = 0; k < 4; k++) {
     const p = (decl + k) % 4;
     for (let j = 0; j < got[p].length; j++) {
-      const el = fxCard(c.x + (i - 3) * 5, c.y);
+      const r0 = seen && seen[i], s = talonSpot(i);
+      const x = r0 ? r0.left + r0.width / 2 : s.x, y = r0 ? r0.top + r0.height / 2 : s.y;
+      const tScale = ((r0 ? r0.width : s.w) / cw).toFixed(3);
+      const el = fxCard(x, y);
       let t;
       if (p === 0) { const r = $('#hand').getBoundingClientRect(); t = { x: r.left + r.width / 2, y: r.top + 30 }; }
       else t = center(document.querySelector(`.seat.s${p} .av`).getBoundingClientRect());
-      el.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${t.x - c.x}px,${t.y - c.y}px) scale(.55)`, opacity: .4 }],
-        { duration: 380 * sp, delay: i * 110 * sp, easing: 'ease-in', fill: 'forwards' }).onfinish = () => sfx('deal');
+      el.animate([{ transform: `scale(${tScale})` }, { transform: `translate(${t.x - x}px,${t.y - y}px) scale(.55)`, opacity: .4 }],
+        { duration: 380 * sp, delay: i * 110 * sp, easing: 'ease-in', fill: 'both' }).onfinish = () => sfx('deal');
       i++;
     }
   }
