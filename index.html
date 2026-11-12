@@ -94,6 +94,22 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 .btn.primary small{color:#5a3a10}
 .btn:disabled{opacity:.4;cursor:default}
 .err{color:var(--bad);font-size:12px;margin-top:6px}
+.nmt[data-act]{cursor:pointer;text-decoration:underline dotted #fff6;text-underline-offset:3px}
+.seat .nm{overflow-wrap:anywhere}
+.nmt{display:-webkit-inline-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-width:100%;vertical-align:bottom}
+.seat.s0 .nmt{-webkit-line-clamp:1}
+.txtin{font:inherit;font-size:16px;width:100%;max-width:280px;padding:9px 11px;border-radius:9px;border:1px solid var(--gold);background:#fffaf0;color:#2a0609;margin:4px 0}
+.lnk{background:none;border:0;padding:4px 6px;color:var(--gold2);text-decoration:underline;cursor:pointer;font-size:12px}
+#zoom{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:#000c;cursor:zoom-out;animation:zfade .15s ease}
+#zoom[hidden]{display:none}
+.zoomwrap{display:flex;flex-direction:column;align-items:center;gap:10px;animation:zpop .18s cubic-bezier(.2,.8,.3,1.2)}
+.zoomwrap .card{box-shadow:0 12px 44px #000;border-radius:calc(var(--cw) * .07)}
+.zoomwrap .card .ix{font-size:calc(var(--cw) * .075);left:calc(var(--cw) * .025);top:calc(var(--cw) * .025)}
+.zoomwrap .card .ix i{font-size:calc(var(--cw) * .08)}
+.zcap{color:var(--cream);font-family:Georgia,serif;font-size:18px;text-align:center}
+.zcap small{display:block;color:var(--muted);font-family:inherit;font-size:12px;margin-top:3px}
+@keyframes zfade{from{opacity:0}}
+@keyframes zpop{from{transform:scale(.6);opacity:0}}
 .hintchip{position:absolute;right:10px;top:6px;min-height:32px;padding:5px 10px}
 .hint{color:var(--muted);font-size:12px}
 .grp{margin-bottom:6px}
@@ -122,7 +138,8 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
 #hand .card.intro{animation:intro .42s cubic-bezier(.2,.7,.3,1) both}
 @keyframes intro{from{transform:translateY(40px) rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
 /* cards */
-.card{position:relative;width:var(--cw);height:var(--ch);border-radius:7px;background:var(--cream);color:var(--ink);box-shadow:0 2px 6px #0009;border:1px solid #c9b68a;overflow:hidden;user-select:none;-webkit-user-select:none}
+.card{position:relative;width:var(--cw);height:var(--ch);border-radius:7px;background:var(--cream);color:var(--ink);box-shadow:0 2px 6px #0009;border:1px solid #c9b68a;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.card img{pointer-events:none;-webkit-user-drag:none}
 .card .in{position:absolute;inset:3px;border-radius:5px;border:1px solid #d6c08a}
 .card .ix{position:absolute;left:4px;top:3px;font-family:Georgia,serif;font-weight:700;font-size:12px;line-height:1;letter-spacing:-.3px}
 .card .ix i{display:block;font-style:normal;font-size:13px;margin-top:1px}
@@ -237,6 +254,7 @@ button.pile{cursor:pointer;color:var(--gold2);text-decoration:underline dotted}
   <div id="fx"></div>
 </div>
 <div id="modal"></div>
+<div id="zoom" hidden data-act="unzoom"></div>
 <script>
 /* Card art hook: supply image URLs (or data: URIs) to replace the drawn faces.
    Keys: 'back', 'T1'..'T21', 'T22' (skíz), and suit cards like 'HK','HQ','HC','HJ','HX' (X = ace/ten).
@@ -1656,7 +1674,7 @@ const ui = {
   sel: [], err: '', annSel: { declare: 0, bonuses: [], kontras: [] },
   showTrick: null, collecting: false, timer: null, modal: null,
   bubbles: {}, logSeen: 0, anim: null, intro: false, dealtHand: 0, fx: null, tut: null, mainM: null, learned: {}, coach: { curKey: null, cur: null }, hintKey: null, hideKey: null,
-  prefs: { speed: 'normal', illustrated: false, review: true, xxiDouble: true, coins: 100, art: 'ms', helper: 'ask', sound: true, levels: [null, 'intermediate', 'intermediate', 'intermediate'] },
+  prefs: { speed: 'normal', illustrated: false, review: true, xxiDouble: true, coins: 100, art: 'ms', helper: 'ask', sound: true, levels: [null, 'intermediate', 'intermediate', 'intermediate'], names: [null, null, null, null] },
 };
 
 // ---------- persistence ----------
@@ -1675,6 +1693,61 @@ function load() {
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const N = p => M.names[p];
+// a name short enough for table headings and labels (full name in the tooltip)
+function shortN(p, max = 14) {
+  const n = N(p), a = Array.from(n);
+  if (a.length <= max) return esc(n);
+  let cut = a.slice(0, max).join(''); const sp = cut.lastIndexOf(' ');
+  if (sp >= 5) cut = cut.slice(0, sp);
+  return `<span title="${esc(n)}">${esc(cut.trim())}…</span>`;
+}
+const initial = n => (Array.from(n)[0] || '?').toUpperCase();
+
+// ---------- player names ----------
+// Computer players can be renamed (not in the tutorial, whose scripts name them). Custom names
+// live in prefs.names and carry over to new games; M.baseNames keeps this game's defaults.
+const NAME_MAX = 48;
+function cleanName(s) {
+  // letters (any alphabet), numbers, spaces and a little punctuation; no markup, colons or emoji
+  const t = String(s || '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N} '’.\-_&!?]/gu, '').replace(/\s+/g, ' ').trim();
+  return Array.from(t).slice(0, NAME_MAX).join('').trim();
+}
+function canRename(p) { return p > 0 && !ui.tut; }
+function nameTag(p) {
+  if (!canRename(p)) return `<span class="nmt">${esc(N(p))}</span>`;
+  return `<span class="nmt" data-act="rename" data-seat="${p}" role="button" tabindex="0" title="${esc(N(p))} (tap to rename)">${esc(N(p))}</span>`;
+}
+function baseName(p) { return (M.baseNames || M.names)[p]; }
+function applyNames(m) {
+  m.baseNames = m.names.slice();
+  for (const p of [1, 2, 3]) if (ui.prefs.names && ui.prefs.names[p]) m.names[p] = ui.prefs.names[p];
+  return m;
+}
+function freshMatch() {
+  return applyNames(E.newMatch({ illustrated: ui.prefs.illustrated, levels: ui.prefs.levels.slice(), xxiDouble: ui.prefs.xxiDouble, startCoins: ui.prefs.coins }));
+}
+function renameCheck(p, v) {
+  if (!v) return '';
+  if (v.toLowerCase() === 'you') return 'That one’s yours. Pick another name.';
+  const q = [0, 1, 2, 3].find(r => r !== p && N(r).toLowerCase() === v.toLowerCase());
+  return q != null ? `${q === 0 ? 'You' : N(q)} already ${q === 0 ? 'have' : 'has'} that name.` : '';
+}
+function setName(p, v) {
+  if (!M.baseNames) M.baseNames = M.names.slice();
+  const custom = v && v !== M.baseNames[p] ? v : null;
+  if (!ui.prefs.names) ui.prefs.names = [null, null, null, null];
+  ui.prefs.names[p] = custom;
+  M.names[p] = custom || M.baseNames[p];
+  save();
+}
+function renameHTML() {
+  const p = ui.rename.seat;
+  return `<h2>Rename ${esc(N(p))}</h2>
+  <p class="hint">Up to ${NAME_MAX} letters, numbers and spaces. The name is kept for your next games too.</p>
+  <input id="rnm" class="txtin" type="text" maxlength="${NAME_MAX}" value="${esc(N(p))}" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="New name">
+  <div class="err" id="rnmerr" role="alert"></div>
+  <div class="row" style="margin-top:8px"><button class="btn primary" data-act="renamesave">Save</button><button class="btn" data-act="renamereset">Back to ${esc(baseName(p))}</button><button class="btn" data-act="renameback">Cancel</button></div>`;
+}
 const delay = ms => ms * (SPEEDS[ui.prefs.speed] || 1);
 const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
 const MS_ART = window.MS_ART || {};
@@ -1751,8 +1824,8 @@ function render() {
     const turn = pd.player === p && !ui.showTrick && !dealing ? 'turn' : '';
     const n = dealing ? 0 : h.hands[p].length;
     const lvl = p ? `<div class="lvl">${LEVEL_NAMES[M.levels[p]] || ''}${n ? ` · ${n} cards` : ''}</div>` : '';
-    html += `<div class="seat s${p} ${turn}" data-seat="${p}"><div class="av">${esc(N(p)[0])}${h.hat === p ? '<span class="hat" title="Mayor’s hat">🎩</span>' : ''}</div>` +
-      `<div><div class="nm">${esc(N(p))} <span class="coins${M.scores[p] <= 20 ? ' low' : ''}" title="Gold coins"><i class="coin"></i>${M.scores[p]}</span></div>${lvl}<div class="tags">${seatTags(h, p)}</div>${pileHTML(h, p)}</div></div>`;
+    html += `<div class="seat s${p} ${turn}" data-seat="${p}"><div class="av">${esc(initial(N(p)))}${h.hat === p ? '<span class="hat" title="Mayor’s hat">🎩</span>' : ''}</div>` +
+      `<div><div class="nm">${nameTag(p)} <span class="coins${M.scores[p] <= 20 ? ' low' : ''}" title="Gold coins"><i class="coin"></i>${M.scores[p]}</span></div>${lvl}<div class="tags">${seatTags(h, p)}</div>${pileHTML(h, p)}</div></div>`;
   }
   if (!dealing) for (const [p, txt] of Object.entries(ui.bubbles)) if (txt) html += `<div class="bubble b${p}">${esc(txt)}</div>`;
   if (h.phase === 'bidding' && !dealing) {
@@ -1839,7 +1912,7 @@ function postRender() {
 function infoHTML(h) {
   let s = '';
   if (h.declarer >= 0 && h.level) {
-    let c = `${esc(N(h.declarer))} · ${E.BID_NAMES[h.level]} (${h.level})`;
+    let c = `${shortN(h.declarer)} · ${E.BID_NAMES[h.level]} (${h.level})`;
     if (h.called) c += ` · called ${E.roman(E.tv(h.called))}`;
     if (h.mult > 1) c += ` · stakes ×${h.mult}`;
     s += `<div class="contract">${c}</div>`;
@@ -2010,6 +2083,7 @@ function renderModal() {
   else if (m === 'log') body = `<h2>Hand log</h2>` + h.log.map(l => `<div class="logl ${l.kind}">${esc(l.text)}</div>`).join('');
   else if (m === 'rules') body = rulesHTML();
   else if (m === 'settings') body = settingsHTML();
+  else if (m === 'rename') body = renameHTML();
   else if (m === 'lasttrick') {
     const t = h.play.tricks[h.play.tricks.length - 1];
     body = `<h2>Last trick</h2>${trickRow(t)}<p>${esc(N(t.winner))} won it.</p>`;
@@ -2027,7 +2101,7 @@ function renderModal() {
 }
 function trickRow(t, extra) {
   return `<div class="trk"><div class="no">Trick ${t.no}${extra ? `<br><span class="hint">${extra}</span>` : ''}</div>` + t.cards.map(x =>
-    `<div class="${x.p === t.winner ? 'w' : ''}">${cardHTML(x.c)}<div class="who">${esc(N(x.p))}</div></div>`).join('') + '</div>';
+    `<div class="${x.p === t.winner ? 'w' : ''}">${cardHTML(x.c)}<div class="who">${shortN(x.p, 10)}</div></div>`).join('') + '</div>';
 }
 function fmt(v) { return v > 0 ? `<span class="pos">+${v}</span>` : v < 0 ? `<span class="neg">${v}</span>` : '0'; }
 function resultHTML() {
@@ -2036,7 +2110,7 @@ function resultHTML() {
   if (r.kind === 'passedout') return `<h2>Thrown in</h2><p>Nobody bid. The same dealer deals again and the next four deals are played at double stakes.</p>${talonHTML(h)}<div class="row"><button class="btn primary" data-act="next">Deal again</button></div>`;
   if (r.kind === 'annulled') return `<h2>Hand annulled</h2><p>The same dealer deals again, and the next four deals are at double stakes.</p><div class="row"><button class="btn primary" data-act="next">Deal again</button></div>`;
   let s = '';
-  const names = T => [0, 1, 2, 3].filter(q => h.side && h.side[q] === T).map(q => esc(N(q))).join(' & ');
+  const names = T => [0, 1, 2, 3].filter(q => h.side && h.side[q] === T).map(q => shortN(q)).join(' & ');
   if (r.kind === 'proba') {
     s += `<h2>No honour in the talon</h2><p>${esc(N(h.declarer))} bid Three without an honour and didn’t find one. The game is lost: they pay the game value (${h.level}) to each player.</p>`;
   } else {
@@ -2059,7 +2133,7 @@ function resultHTML() {
       `<tr><td><b>Net for each declarer${h.alone ? ' (alone: ×3)' : ''}</b></td><td><b>${fmt(r.net)}</b></td></tr></table>`;
   }
   // 3. settlement
-  s += '<h3>Who pays whom</h3><table class="lines"><tr><th></th>' + [0, 1, 2, 3].map(p => `<th>${esc(N(p))}</th>`).join('') + '</tr>';
+  s += '<h3>Who pays whom</h3><table class="lines"><tr><th></th>' + [0, 1, 2, 3].map(p => `<th>${shortN(p)}</th>`).join('') + '</tr>';
   if (r.rows) {
     for (const row of r.rows) s += `<tr><td>${esc(row.label)}</td>${row.deltas.map(v => `<td>${fmt(v)}</td>`).join('')}</tr>`;
     if (r.mult > 1) {
@@ -2099,7 +2173,7 @@ function overHTML() {
   return s;
 }
 function scoresHTML() {
-  let s = `<h2>Score sheet</h2><table><tr><th>#</th>${[0, 1, 2, 3].map(p => `<th>${esc(N(p))}</th>`).join('')}</tr>`;
+  let s = `<h2>Score sheet</h2><table><tr><th>#</th>${[0, 1, 2, 3].map(p => `<th>${shortN(p)}</th>`).join('')}</tr>`;
   for (const r of M.history) {
     const lab = r.kind === 'passedout' ? 'thrown in' : r.kind === 'annulled' ? 'annulled' : `${N(r.declarer)} ${E.BID_NAMES[r.level]}`;
     s += `<tr><td>${r.no} <span class="hint">${esc(lab)}</span></td>${r.deltas.map(v => `<td>${fmt(v)}</td>`).join('')}</tr>`;
@@ -2111,11 +2185,11 @@ function scoresHTML() {
 }
 function settingsHTML() {
   const p = ui.prefs;
-  const lv = [1, 2, 3].map(seat => `<div class="set"><div>${esc(N(seat))}</div><div class="row">${AI.LEVELS.map(k =>
+  const lv = [1, 2, 3].map(seat => `<div class="set"><div>${esc(N(seat))}${canRename(seat) ? ` <button class="lnk" data-act="rename" data-seat="${seat}">Rename</button>` : ''}</div><div class="row">${AI.LEVELS.map(k =>
     `<button class="chip" data-act="level" data-seat="${seat}" data-v="${k}" aria-pressed="${M.levels[seat] === k}">${LEVEL_NAMES[k]}</button>`).join('')}</div></div>`).join('');
   return `<h2>Settings</h2><div class="row" style="margin-bottom:6px"><button class="btn" data-act="about">About this game</button></div>
   <h3>AI players</h3>${lv}
-  <p class="hint">Novice plays loosely and forgets announcements. Intermediate plays sound rules of thumb. Seasoned also counts cards and tracks who is out of which suit. Pro tries each card against dozens of guesses at the hidden hands and keeps the best. Changes apply straight away.</p>
+  <p class="hint">Novice plays loosely and forgets announcements. Intermediate plays sound rules of thumb. Seasoned also counts cards and tracks who is out of which suit. Pro tries each card against dozens of guesses at the hidden hands and keeps the best. Changes apply straight away. You can also tap a name on the table to rename that player.</p>
   <h3>Helper</h3>
   <div class="set"><div>Suggestions from Mitz &amp; Simz<div class="hint">Recommended bids, discards, calls, announcements and cards, with the reason why. The two cats take turns, one hand each.</div></div><div class="row">${[['off', 'Off'], ['ask', 'On request'], ['always', 'Every move']].map(([k, l]) => `<button class="chip" data-act="helper" data-v="${k}" aria-pressed="${p.helper === k}">${l}</button>`).join('')}</div></div>
   <h3>Table</h3>
@@ -2399,6 +2473,24 @@ document.addEventListener('click', ev => {
       if (act === 'rules' && t.dataset.sec) { const s = document.getElementById('r-' + t.dataset.sec); if (s) s.scrollIntoView(); }
       return;
     case 'close': closeModal(); return;
+    case 'unzoom': unzoom(); return;
+    case 'rename': {
+      const p = +t.dataset.seat;
+      if (!canRename(p)) return;
+      ev.stopPropagation();
+      ui.rename = { seat: p, back: ui.modal };
+      ui.modal = 'rename'; renderModal();
+      const inp = $('#rnm'); if (inp) { inp.focus(); inp.select(); }
+      return;
+    }
+    case 'renamesave': case 'renamereset': {
+      const p = ui.rename.seat;
+      const v = act === 'renamereset' ? '' : cleanName($('#rnm').value);
+      const bad = renameCheck(p, v);
+      if (bad) { $('#rnmerr').textContent = bad; return; }
+      setName(p, v);
+    } // fall through: back to where we came from
+    case 'renameback': ui.modal = ui.rename && ui.rename.back === 'settings' ? 'settings' : null; ui.rename = null; render(); renderModal(); return;
     case 'closebg': if (ev.target === t) closeModal(); return;
     case 'toggleill': ui.prefs.illustrated = !ui.prefs.illustrated; M.illustrated = ui.prefs.illustrated; save(); renderModal(); return;
     case 'togglereview': ui.prefs.review = !ui.prefs.review; save(); renderModal(); return;
@@ -2409,15 +2501,54 @@ document.addEventListener('click', ev => {
     case 'speed': ui.prefs.speed = t.dataset.v; save(); renderModal(); return;
     case 'newmatch':
       clearTimeout(ui.timer);
-      M = E.newMatch({ illustrated: ui.prefs.illustrated, levels: ui.prefs.levels.slice(), xxiDouble: ui.prefs.xxiDouble, startCoins: ui.prefs.coins });
+      M = freshMatch();
       ui.modal = null; ui.bubbles = {}; ui.logSeen = 0; ui.showTrick = null; ui.sel = []; ui.dealtHand = 0;
       save(); render(); schedule(); return;
   }
 });
 document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && !$('#zoom').hidden) { unzoom(); return; }
   if (ev.key === 'Escape' && ui.modal) closeModal();
-  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#hand .card[data-act], .logo')) { ev.preventDefault(); ev.target.click(); }
+  if (ev.key === 'Enter' && ev.target.id === 'rnm') { ev.preventDefault(); $('[data-act="renamesave"]').click(); return; }
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#hand .card[data-act], .logo, .nmt[data-act]')) { ev.preventDefault(); ev.target.click(); }
 });
+
+// ---------- card zoom: press and hold a face-up card (right-click with a mouse) ----------
+const zoom = { timer: 0, x: 0, y: 0, fired: false, swallowUntil: 0 };
+function zoomCard(c) {
+  const el = $('#zoom');
+  const w = Math.round(Math.min(innerWidth * 0.86, (innerHeight * 0.86 - 60) / 1.545, 460));
+  const pts = E.points(c), nm = E.isT(c) && c !== 'T22' && c !== 'T1' ? 'Tarokk ' + E.cardName(c) : E.cardName(c);
+  el.innerHTML = `<div class="zoomwrap" style="--cw:${w}px;--ch:${Math.round(w * 1.545)}px">${cardHTML(c)}` +
+    `<div class="zcap">${esc(nm)}<small>${pts} card point${pts === 1 ? '' : 's'} · tap anywhere to close</small></div></div>`;
+  el.hidden = false;
+}
+function unzoom() { const el = $('#zoom'); el.hidden = true; el.innerHTML = ''; }
+const zoomTarget = ev => { const c = ev.target.closest && ev.target.closest('.card[data-c]'); return c && E.points(c.dataset.c) != null ? c : null; };
+document.addEventListener('pointerdown', ev => {
+  clearTimeout(zoom.timer); zoom.fired = false;
+  if (ev.pointerType === 'mouse' || !$('#zoom').hidden) return;
+  const card = zoomTarget(ev);
+  if (!card) return;
+  zoom.x = ev.clientX; zoom.y = ev.clientY;
+  zoom.timer = setTimeout(() => { zoom.fired = true; zoomCard(card.dataset.c); }, 450);
+});
+document.addEventListener('pointermove', ev => { if (Math.hypot(ev.clientX - zoom.x, ev.clientY - zoom.y) > 10) clearTimeout(zoom.timer); });
+document.addEventListener('pointercancel', () => clearTimeout(zoom.timer));
+document.addEventListener('pointerup', () => {
+  clearTimeout(zoom.timer);
+  if (zoom.fired) { zoom.fired = false; zoom.swallowUntil = performance.now() + 400; } // the click that ends a hold
+});
+document.addEventListener('contextmenu', ev => {
+  const card = zoomTarget(ev);
+  if (!card) return;
+  ev.preventDefault();
+  if ($('#zoom').hidden) zoomCard(card.dataset.c);
+});
+// a long press must not also play or select the card it was on
+document.addEventListener('click', ev => {
+  if (performance.now() < zoom.swallowUntil) { zoom.swallowUntil = 0; ev.stopPropagation(); ev.preventDefault(); }
+}, true);
 let rsz; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (!ui.fx) render(); }, 120); });
 
 // ---------- sound (synthesised, no files) ----------
@@ -2469,7 +2600,7 @@ function talonHTML(h) {
   const who = {};
   if (h.talonGot) h.talonGot.forEach((cs, q) => cs.forEach(c => (who[c] = q)));
   return `<h3>The talon</h3><p class="hint">The six face-down cards${h.talonGot ? ', and who picked each one up' : ''}.</p><div class="cardrow">` +
-    h.talon.map(c => `<div style="text-align:center">${cardHTML(c)}<div class="hint" style="font-size:10px">${who[c] != null ? esc(N(who[c])) : ''}</div></div>`).join('') + '</div>';
+    h.talon.map(c => `<div style="text-align:center">${cardHTML(c)}<div class="hint" style="font-size:10px">${who[c] != null ? shortN(who[c], 10) : ''}</div></div>`).join('') + '</div>';
 }
 
 // ---------- replay a finished hand, trick by trick, with every hand open ----------
@@ -2479,7 +2610,7 @@ function replayHTML() {
   const playHand = q => h.dealt[q].concat(h.talonGot ? h.talonGot[q] : []).filter(c => !h.skartBy[q].includes(c));
   const role = q => q === h.declarer ? 'declarer' : h.side && h.side[q] === 'D' ? 'partner' : 'defender';
   const handsAt = k => [0, 1, 2, 3].map(q => { const gone = new Set(); h.play.tricks.slice(0, k).forEach(t => t.cards.forEach(x => gone.add(x.c))); return E.sortHand(playHand(q).filter(c => !gone.has(c))); });
-  const rowsOf = (hs, mark) => [0, 1, 2, 3].map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${esc(N(q))}</b><br><span class="hint">${role(q)}</span></div><div class="cardrow" style="margin:0">${hs[q].map(c => cardHTML(c, mark && mark(c) ? 'hintc' : '')).join('')}</div></div>`).join('');
+  const rowsOf = (hs, mark) => [0, 1, 2, 3].map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${shortN(q)}</b><br><span class="hint">${role(q)}</span></div><div class="cardrow" style="margin:0">${hs[q].map(c => cardHTML(c, mark && mark(c) ? 'hintc' : '')).join('')}</div></div>`).join('');
   let title, body = '';
   if (step === 0) {
     title = 'The deal';
@@ -2488,7 +2619,7 @@ function replayHTML() {
     title = 'Bidding, talon and discards';
     body = `<div class="hint">${h.bid.actions.map(a => `<b style="color:var(--cream)">${esc(N(a.p))}</b>: ${a.type === 'pass' ? 'pass' : a.type === 'hold' ? 'hold ' + E.BID_NAMES[a.level] : E.BID_NAMES[a.level] + (a.cue ? ' (shows the ' + E.roman(E.tv(a.cue)) + ')' : '')}`).join(' · ')}</div>`;
     body += `<p>${esc(N(h.declarer))} won the bidding at ${E.BID_NAMES[h.level]} and called the ${E.roman(E.tv(h.called))}${h.alone ? ', playing alone' : ` (held by ${esc(N(h.partner))})`}.</p>`;
-    body += [0, 1, 2, 3].filter(q => h.talonGot[q].length).map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${esc(N(q))}</b><br><span class="hint">took / discarded</span></div><div class="cardrow" style="margin:0">${h.talonGot[q].map(c => cardHTML(c)).join('')}<span style="align-self:center;padding:0 4px">→</span>${h.skartBy[q].map(c => cardHTML(c)).join('')}</div></div>`).join('');
+    body += [0, 1, 2, 3].filter(q => h.talonGot[q].length).map(q => `<div class="trk"><div class="no"><b style="color:var(--cream)">${shortN(q)}</b><br><span class="hint">took / discarded</span></div><div class="cardrow" style="margin:0">${h.talonGot[q].map(c => cardHTML(c)).join('')}<span style="align-self:center;padding:0 4px">→</span>${h.skartBy[q].map(c => cardHTML(c)).join('')}</div></div>`).join('');
   } else if (step === 2) {
     title = 'Announcements';
     const said = h.ann.round.filter(r => r.parts.length);
@@ -2506,7 +2637,7 @@ function replayHTML() {
     title = 'Result';
     const r = h.result;
     body = `<div class="big">${r.ptsD} – ${r.ptsO}</div><table class="lines">` + r.lines.map(l => `<tr><td>${esc(l.text)}${l.calc ? `<br><span class="hint">${esc(l.calc)}</span>` : ''}</td><td>${fmt(l.v)}</td></tr>`).join('') + `</table>` +
-      '<table class="lines" style="margin-top:8px"><tr>' + [0, 1, 2, 3].map(q => `<th>${esc(N(q))}</th>`).join('') + '</tr><tr>' + r.deltas.map(v => `<td>${fmt(v)}</td>`).join('') + '</tr></table>';
+      '<table class="lines" style="margin-top:8px"><tr>' + [0, 1, 2, 3].map(q => `<th>${shortN(q)}</th>`).join('') + '</tr><tr>' + r.deltas.map(v => `<td>${fmt(v)}</td>`).join('') + '</tr></table>';
   }
   body = `<div class="rp">${body}</div>`;
   return `<h2>Replay: ${title}</h2><div class="row" style="margin-bottom:8px"><button class="btn" data-act="rp" data-d="-1" ${step ? '' : 'disabled'}>◀ Back</button><button class="btn primary" data-act="rp" data-d="1" ${step < total - 1 ? '' : 'disabled'}>Next ▶</button><span class="hint">Step ${step + 1} of ${total}</span></div>` + body;
@@ -2854,7 +2985,8 @@ ${sec('play', 'Play')}
 <ul><li>The player to the dealer’s right leads the first trick; the winner of each trick leads the next.</li>
 <li>Follow suit if you can. If you can’t, you must play a tarokk. Only with neither may you play anything.</li>
 <li>The highest tarokk wins the trick; with no tarokk, the highest card of the suit led.</li>
-<li>Tap your trick pile to look back at your won tricks (switchable in Settings).</li></ul>
+<li>Tap your trick pile to look back at your won tricks (switchable in Settings).</li>
+<li>Press and hold any face-up card (or right-click it on a computer) to see it full size.</li></ul>
 ${sec('score', 'Scoring & gold')}
 <ul><li>Everyone starts with 100 gold. Each point is one coin. Every player on the losing side pays one player on the winning side. A lone declarer collects from, or pays, all three.</li>
 <li>Game value: Three 1, Two 2, One 3, Solo 4. Silent double game counts 2×, silent volát 3×.</li>
@@ -2873,7 +3005,7 @@ ${sec('words', 'Hungarian words')}
 M = load();
 if (!M && !Object.keys(ui.learned).length) ui.modal = 'welcome';
 if (M) { ui.dealtHand = M.handNo; if (ui.prefs.levels) M.levels = M.levels || ui.prefs.levels.slice(); }
-else M = E.newMatch({ illustrated: ui.prefs.illustrated, levels: ui.prefs.levels.slice(), xxiDouble: ui.prefs.xxiDouble, startCoins: ui.prefs.coins });
+else M = freshMatch();
 ui.logSeen = M.hand.log.length;
 if (M.hand.result) ui.recorded = M.seed + ':' + M.handNo;
 render();
