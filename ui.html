@@ -295,29 +295,32 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const N = p => M.names[p];
 // a name short enough for table headings and labels (full name in the tooltip)
 function shortN(p, max = 14) {
-  const n = N(p), a = Array.from(n);
+  const n = DN(p), a = Array.from(n);
   if (a.length <= max) return esc(n);
   let cut = a.slice(0, max).join(''); const sp = cut.lastIndexOf(' ');
   if (sp >= 5) cut = cut.slice(0, sp);
   return `<span title="${esc(n)}">${esc(cut.trim())}…</span>`;
 }
+// the name shown on labels; seat 0 stays "You" in sentences ("You win the trick")
+function DN(p) { return p === 0 && !ui.tut && ui.prefs.names && ui.prefs.names[0] ? ui.prefs.names[0] : N(p); }
 const initial = n => (Array.from(n)[0] || '?').toUpperCase();
 
 // ---------- player names ----------
-// Computer players can be renamed (not in the tutorial, whose scripts name them). Custom names
-// live in prefs.names and carry over to new games; M.baseNames keeps this game's defaults.
+// Any player can be renamed (not in the tutorial, whose scripts name them). Custom names live in
+// prefs.names and carry over to new games; M.baseNames keeps this game's defaults. Your own name
+// (seat 0) only labels you: messages still say "You".
 const NAME_MAX = 48;
 function cleanName(s) {
   // letters (any alphabet), numbers, spaces and a little punctuation; no markup, colons or emoji
   const t = String(s || '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N} '’.\-_&!?]/gu, '').replace(/\s+/g, ' ').trim();
   return Array.from(t).slice(0, NAME_MAX).join('').trim();
 }
-function canRename(p) { return p > 0 && !ui.tut; }
+function canRename(p) { return p >= 0 && p <= 3 && !ui.tut; }
 function nameTag(p) {
-  if (!canRename(p)) return `<span class="nmt">${esc(N(p))}</span>`;
-  return `<span class="nmt" data-act="rename" data-seat="${p}" role="button" tabindex="0" title="${esc(N(p))} (tap to rename)">${esc(N(p))}</span>`;
+  if (!canRename(p)) return `<span class="nmt">${esc(DN(p))}</span>`;
+  return `<span class="nmt" data-act="rename" data-seat="${p}" role="button" tabindex="0" title="${esc(DN(p))} (tap to rename)">${esc(DN(p))}</span>`;
 }
-function baseName(p) { return (M.baseNames || M.names)[p]; }
+function baseName(p) { return p === 0 ? 'You' : (M.baseNames || M.names)[p]; }
 function applyNames(m) {
   m.baseNames = m.names.slice();
   for (const p of [1, 2, 3]) if (ui.prefs.names && ui.prefs.names[p]) m.names[p] = ui.prefs.names[p];
@@ -328,11 +331,13 @@ function freshMatch() {
 }
 function renameCheck(p, v) {
   if (!v) return '';
-  if (v.toLowerCase() === 'you') return 'That one’s yours. Pick another name.';
-  const q = [0, 1, 2, 3].find(r => r !== p && N(r).toLowerCase() === v.toLowerCase());
-  return q != null ? `${q === 0 ? 'You' : N(q)} already ${q === 0 ? 'have' : 'has'} that name.` : '';
+  if (v.toLowerCase() === 'you') return p === 0 ? '' : 'That one’s yours. Pick another name.';
+  const q = [0, 1, 2, 3].find(r => r !== p && DN(r).toLowerCase() === v.toLowerCase());
+  return q != null ? `${q === 0 ? 'You' : DN(q)} already ${q === 0 ? 'have' : 'has'} that name.` : '';
 }
 function setName(p, v) {
+  if (!ui.prefs.names) ui.prefs.names = [null, null, null, null];
+  if (p === 0) { ui.prefs.names[0] = v && v.toLowerCase() !== 'you' ? v : null; save(); return; }
   if (!M.baseNames) M.baseNames = M.names.slice();
   const custom = v && v !== M.baseNames[p] ? v : null;
   if (!ui.prefs.names) ui.prefs.names = [null, null, null, null];
@@ -342,9 +347,9 @@ function setName(p, v) {
 }
 function renameHTML() {
   const p = ui.rename.seat;
-  return `<h2>Rename ${esc(N(p))}</h2>
-  <p class="hint">Up to ${NAME_MAX} letters, numbers and spaces. The name is kept for your next games too.</p>
-  <input id="rnm" class="txtin" type="text" maxlength="${NAME_MAX}" value="${esc(N(p))}" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="New name">
+  return `<h2>${p === 0 ? 'Your name' : 'Rename ' + esc(N(p))}</h2>
+  <p class="hint">Up to ${NAME_MAX} letters, numbers and spaces. The name is kept for your next games too.${p === 0 ? ' It labels your seat and the score sheet; messages still talk to you as “You”.' : ''}</p>
+  <input id="rnm" class="txtin" type="text" maxlength="${NAME_MAX}" value="${esc(DN(p))}" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="New name">
   <div class="err" id="rnmerr" role="alert"></div>
   <div class="row" style="margin-top:8px"><button class="btn primary" data-act="renamesave">Save</button><button class="btn" data-act="renamereset">Back to ${esc(baseName(p))}</button><button class="btn" data-act="renameback">Cancel</button></div>`;
 }
@@ -424,7 +429,7 @@ function render() {
     const turn = pd.player === p && !ui.showTrick && !dealing ? 'turn' : '';
     const n = dealing ? 0 : h.hands[p].length;
     const lvl = p ? `<div class="lvl">${LEVEL_NAMES[M.levels[p]] || ''}${n ? ` · ${n} cards` : ''}</div>` : '';
-    html += `<div class="seat s${p} ${turn}" data-seat="${p}"><div class="av">${esc(initial(N(p)))}${h.hat === p ? '<span class="hat" title="Mayor’s hat">🎩</span>' : ''}</div>` +
+    html += `<div class="seat s${p} ${turn}" data-seat="${p}"><div class="av">${esc(initial(DN(p)))}${h.hat === p ? '<span class="hat" title="Mayor’s hat">🎩</span>' : ''}</div>` +
       `<div><div class="nm">${nameTag(p)} <span class="coins${M.scores[p] <= 20 ? ' low' : ''}" title="Gold coins"><i class="coin"></i>${M.scores[p]}</span></div>${lvl}<div class="tags">${seatTags(h, p)}</div>${pileHTML(h, p)}</div></div>`;
   }
   if (!dealing) for (const [p, txt] of Object.entries(ui.bubbles)) if (txt) html += `<div class="bubble b${p}">${esc(txt)}</div>`;
@@ -767,7 +772,7 @@ function overHTML() {
   const win = o.winners.map(N).join(' and ');
   let s = `<h2>${o.winners.includes(0) ? (o.winners.length > 1 ? 'You share the win!' : 'You win!') : esc(win) + ' win' + (o.winners.length > 1 ? '' : 's')}</h2>`;
   s += `<p>${esc(o.broke.map(N).join(' and '))} ran out of gold after ${o.handNo} hand${o.handNo > 1 ? 's' : ''}.</p>`;
-  s += '<table><tr><th>Player</th><th>Coins</th></tr>' + order.map((p, i) => `<tr><td>${i + 1}. ${esc(N(p))}${p ? ` <span class="hint">${LEVEL_NAMES[M.levels[p]]}</span>` : ''}</td><td><b class="${M.scores[p] <= 0 ? 'neg' : ''}">${M.scores[p]}</b></td></tr>`).join('') + '</table>';
+  s += '<table><tr><th>Player</th><th>Coins</th></tr>' + order.map((p, i) => `<tr><td>${i + 1}. ${esc(DN(p))}${p ? ` <span class="hint">${LEVEL_NAMES[M.levels[p]]}</span>` : ''}</td><td><b class="${M.scores[p] <= 0 ? 'neg' : ''}">${M.scores[p]}</b></td></tr>`).join('') + '</table>';
   s += `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="newmatch">New game</button><button class="btn" data-act="scores">Score sheet</button></div>`;
   s += `<div class="kofi-line">Enjoyed the game? <a href="${LINKS.kofi}" target="_blank" rel="noopener">☕ Buy Mitz &amp; Simz a coffee on Ko-fi</a></div>`;
   return s;
@@ -788,7 +793,7 @@ function settingsHTML() {
   const lv = [1, 2, 3].map(seat => `<div class="set"><div>${esc(N(seat))}${canRename(seat) ? ` <button class="lnk" data-act="rename" data-seat="${seat}">Rename</button>` : ''}</div><div class="row">${AI.LEVELS.map(k =>
     `<button class="chip" data-act="level" data-seat="${seat}" data-v="${k}" aria-pressed="${M.levels[seat] === k}">${LEVEL_NAMES[k]}</button>`).join('')}</div></div>`).join('');
   return `<h2>Settings</h2><div class="row" style="margin-bottom:6px"><button class="btn" data-act="about">About this game</button></div>
-  <h3>AI players</h3>${lv}
+  <h3>Players</h3>${canRename(0) ? `<div class="set"><div>Your name: ${esc(DN(0))} <button class="lnk" data-act="rename" data-seat="0">Change</button></div></div>` : ''}${lv}
   <p class="hint">Novice plays loosely and forgets announcements. Intermediate plays sound rules of thumb. Seasoned also counts cards and tracks who is out of which suit. Pro tries each card against dozens of guesses at the hidden hands and keeps the best. Changes apply straight away. You can also tap a name on the table to rename that player.</p>
   <h3>Helper</h3>
   <div class="set"><div>Suggestions from Mitz &amp; Simz<div class="hint">Recommended bids, discards, calls, announcements and cards, with the reason why. The two cats take turns, one hand each.</div></div><div class="row">${[['off', 'Off'], ['ask', 'On request'], ['always', 'Every move']].map(([k, l]) => `<button class="chip" data-act="helper" data-v="${k}" aria-pressed="${p.helper === k}">${l}</button>`).join('')}</div></div>
